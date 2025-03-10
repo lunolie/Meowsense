@@ -1,10 +1,8 @@
 package dev.hez.meowsense;
 
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.util.Window;
-import net.minecraft.resource.Resource;
-import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import dev.hez.meowsense.anticheat.AntiCheatManager;
@@ -18,9 +16,15 @@ import dev.hez.meowsense.utils.render.notifications.NotificationManager;
 import dev.hez.meowsense.utils.rotation.manager.RotationManager;
 import lombok.Getter;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWImage;
+import org.lwjgl.system.MemoryStack;
 
 @Getter
 public final class Client {
@@ -40,7 +44,7 @@ public final class Client {
     private final CommandManager commandManager;
 
     private final DelayUtil delayUtil;
-    public static String version = "1.0";
+    public static String version = "1.1";
 
     public Client() {
         INSTANCE = this;
@@ -59,5 +63,68 @@ public final class Client {
         eventManager.subscribe(notificationManager);
         eventManager.subscribe(rotationManager);
         eventManager.subscribe(delayUtil);
+
+        ClientLifecycleEvents.CLIENT_STARTED.register(client -> setWindowIcon());
+    }
+
+    private void setWindowIcon() {
+        Window window = mc.getWindow();
+        if (window == null) {
+            LOGGER.error("Minecraft window is not initialized yet!");
+            return;
+        }
+
+        try {
+            ByteBuffer[] icons = new ByteBuffer[]{
+                    loadIcon("assets/meowsense/icons/icon-16x16.png"),
+                    loadIcon("assets/meowsense/icons/icon-32x32.png"),
+                    loadIcon("assets/meowsense/icons/icon-64x64.png"),
+                    loadIcon("assets/meowsense/icons/icon-128x128.png")
+            };
+
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                GLFWImage.Buffer iconBuffer = GLFWImage.malloc(icons.length, stack);
+                for (int i = 0; i < icons.length; i++) {
+                    GLFWImage icon = iconBuffer.get(i);
+                    int width = icons[i].remaining() / 4;
+                    int height = width;
+                    icon.set(width, height, icons[i]);
+                }
+
+
+                GLFW.glfwSetWindowIcon(window.getHandle(), iconBuffer);
+            }
+        } catch (IOException e) {
+            LOGGER.error("Failed to set window icon: " + e.getMessage());
+        }
+    }
+
+    private ByteBuffer loadIcon(String path) throws IOException {
+        InputStream inputStream = Client.class.getClassLoader().getResourceAsStream(path);
+        if (inputStream == null) {
+            LOGGER.error("Icon not found at path: " + path);
+            throw new IOException("Could not find icon: " + path);
+        }
+        LOGGER.info("Successfully loaded icon: " + path);
+
+        BufferedImage image = ImageIO.read(inputStream);
+        int width = image.getWidth();
+        int height = image.getHeight();
+        int[] pixels = new int[width * height];
+        image.getRGB(0, 0, width, height, pixels, 0, width);
+
+
+        ByteBuffer buffer = ByteBuffer.allocateDirect(width * height * 4);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int pixel = pixels[y * width + x];
+                buffer.put((byte) ((pixel >> 16) & 0xFF)); // Red
+                buffer.put((byte) ((pixel >> 8) & 0xFF));  // Green
+                buffer.put((byte) (pixel & 0xFF));         // Blue
+                buffer.put((byte) ((pixel >> 24) & 0xFF)); // Alpha
+            }
+        }
+        buffer.flip();
+        return buffer;
     }
 }

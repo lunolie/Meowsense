@@ -4,8 +4,10 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import dev.hez.meowsense.utils.Utils;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL40C;
+import net.minecraft.client.MinecraftClient;
 
 import java.awt.*;
 
@@ -164,5 +166,18 @@ public class DrawUtils implements Utils {
         bufferBuilder.vertex(matrix, x, y, 0.0F).color(topLeftColor.getRGB());
         bufferBuilder.vertex(matrix, x, y1, 0.0F).color(bottomLeftColor.getRGB());
         bufferBuilder.vertex(matrix, x1, y1, 0.0F).color(bottomRightColor.getRGB());
+    }
+
+
+    public static void drawImage(MatrixStack matrices, Identifier image, int x, int y, int width, int height) {
+        RenderSystem.setShaderTexture(0, image);
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+        BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
+        Matrix4f matrix = matrices.peek().getPositionMatrix();
+        bufferBuilder.vertex(matrix, x, y + height, 0).texture(0, 1);
+        bufferBuilder.vertex(matrix, x + width, y + height, 0).texture(1, 1);
+        bufferBuilder.vertex(matrix, x + width, y, 0).texture(1, 0);
+        bufferBuilder.vertex(matrix, x, y, 0).texture(0, 0);
+        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
     }
 }

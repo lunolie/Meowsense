@@ -49,7 +49,8 @@ public class FontManager {
         PRODUCT_SANS_REGULAR("product_sans_regular"),
         VERDANA("verdana_pro_regular"),
         SFUI("sfui_display_regular"),
-        Tenacity("tenacity-bold");
+        Tenacity("tenacity-bold"),
+        Hack("hack-regular");
 
 
         private final String type;

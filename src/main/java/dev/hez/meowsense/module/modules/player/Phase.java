@@ -13,7 +13,7 @@ public class Phase extends Module {
     public final NewModeSetting phaseMode = new NewModeSetting("Phase Mode", "Vanilla", new VanillaPhase("Vanilla", this));
 
     public Phase() {
-        super("Phase", "Allows you to phase through blocks! Currently not working in any anticheat lmao", 0, ModuleCategory.PLAYER);
+        super("Phase", "Allows you to phase through blocks!", 0, ModuleCategory.PLAYER);
         this.addSettings(phaseMode);
     }
 

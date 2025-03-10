@@ -8,6 +8,7 @@ import dev.hez.meowsense.module.modules.movement.*;
 import dev.hez.meowsense.module.modules.other.*;
 import dev.hez.meowsense.module.modules.other.Timer;
 import dev.hez.meowsense.module.modules.player.*;
+import dev.hez.meowsense.module.modules.ghost.FastPlace;
 import dev.hez.meowsense.module.modules.render.*;
 import lombok.Getter;
 
@@ -74,6 +75,7 @@ public final class ModuleManager {
         add(new PostProcessing());
         add(new TargetHUD());
         add(new Theme());
+        add(new Companion());
 
         // COMBAT
         add(new AntiBot());
@@ -90,6 +92,7 @@ public final class ModuleManager {
         add(new AutoClicker());
         add(new LagRange());
         add(new TriggerBot());
+        add(new FastPlace());
 
         // MOVEMENT
         add(new AirStuck());

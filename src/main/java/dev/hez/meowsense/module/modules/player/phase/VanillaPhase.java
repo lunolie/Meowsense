@@ -1,14 +1,17 @@
 package dev.hez.meowsense.module.modules.player.phase;
 
 import dev.hez.meowsense.module.modules.player.Phase;
-import dev.hez.meowsense.utils.mc.PacketUtils;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-import net.minecraft.util.math.MathHelper;
+import dev.hez.meowsense.event.bus.Listener;
+import dev.hez.meowsense.event.bus.annotations.EventLink;
+import dev.hez.meowsense.event.impl.player.EventTickPre;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 public class VanillaPhase extends PhaseMode {
-    private static final double BLINK_DISTANCE = 5.0; // Distance to teleport forward
+
+    private boolean isClipping = false;
+    private int phaseTicks = 0;
 
     public VanillaPhase(String name, Phase module) {
         super(name, module);
@@ -16,44 +19,54 @@ public class VanillaPhase extends PhaseMode {
 
     @Override
     public void onEnable() {
-        System.out.println("BlinkPhase enabled!");
+        if (mc.player != null) {
+            mc.player.noClip = true;
+        }
     }
 
-    @Override
+    @EventLink
+    public final Listener<EventTickPre> onTick = event -> {
+        onUpdate();
+    };
+
     public void onUpdate() {
         if (mc.player == null || mc.world == null) return;
 
-        // Get player’s current position and facing direction
-        double playerYaw = Math.toRadians(mc.player.getYaw()); // Get the player's facing direction (yaw)
-        double offsetX = -MathHelper.sin((float) playerYaw) * BLINK_DISTANCE; // X offset based on yaw
-        double offsetZ = MathHelper.cos((float) playerYaw) * BLINK_DISTANCE; // Z offset based on yaw
+        mc.player.noClip = true;
 
-        // Calculate new position (same Y value, but offset X and Z based on facing direction)
-        double newX = mc.player.getX() + offsetX;
-        double newY = mc.player.getY(); // Keep Y position the same
-        double newZ = mc.player.getZ() + offsetZ;
+        if (mc.player.horizontalCollision) {
+            isClipping = true;
+            phaseTicks = 0;
+        }
 
-        // Check if the player's movement would collide with a block
-        BlockPos currentPos = new BlockPos((int) mc.player.getX(), (int) mc.player.getY(), (int) mc.player.getZ());
-        BlockPos targetPos = new BlockPos((int) newX, (int) newY, (int) newZ);
+        if (isClipping) {
+            phaseTicks++;
 
-        // If the new position is colliding with a block, teleport
-        if (mc.world.getBlockState(targetPos).isSolid()) {
-            // Send the position update packet to the server to teleport
-            PacketUtils.sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(newX, newY, newZ, false));
+            if (phaseTicks <= 3) {
+                float yawRadians = (float) Math.toRadians(mc.player.getYaw());
+                double motionX = -MathHelper.sin(yawRadians);
+                double motionZ = MathHelper.cos(yawRadians);
 
-            // Update the player’s position on the client side
-            mc.player.setPosition(newX, newY, newZ);
+                double length = Math.sqrt(motionX * motionX + motionZ * motionZ);
+                motionX /= length;
+                motionZ /= length;
 
-            System.out.println("Player blinked through a block to: " + newX + ", " + newY + ", " + newZ);
-        } else {
-            System.out.println("No block detected, blink not triggered.");
+                double offset = (phaseTicks == 1) ? 0.06 : 1.7;
+                double newX = mc.player.getX() + motionX * offset;
+                double newZ = mc.player.getZ() + motionZ * offset;
+
+                mc.player.setPosition(newX, mc.player.getY(), newZ);
+            } else {
+                isClipping = false;
+                phaseTicks = 0;
+            }
         }
     }
 
     @Override
     public void onDisable() {
-        // Reset anything on disable if needed
-        System.out.println("BlinkPhase disabled.");
+        if (mc.player != null) {
+            mc.player.noClip = false;
+        }
     }
 }

@@ -31,10 +31,10 @@ public class Interface extends Module {
     public static final BooleanSetting watermark = new BooleanSetting("Watermark", true);
     public static final ModeSetting watermarkMode = new ModeSetting("Watermark Mode", "Simple", "Simple", "Gamesense");
     public static final StringSetting watermarkText = new StringSetting("Watermark Text", "Meow");
-    public static final ModeSetting watermarkSimpleFontMode = new ModeSetting("Watermark Font", "MC", "MC", "Product Sans Regular", "Product Sans Medium", "Product Sans Bold", "Verdana", "SFUI", "Tenacity");
+    public static final ModeSetting watermarkSimpleFontMode = new ModeSetting("Watermark Font", "MC", "MC", "Product Sans Regular", "Product Sans Medium", "Product Sans Bold", "Verdana", "SFUI", "Tenacity", "Hack");
     public static final BooleanSetting arrayList = new BooleanSetting("ArrayList", true);
     public static final ModeSetting colorMode = new ModeSetting("Color Mode", "Astolfo", "Astolfo", "Theme");
-    public static final ModeSetting fontMode = new ModeSetting("ArrayList Font", "MC", "MC", "Product Sans Regular", "Product Sans Medium", "Product Sans Bold", "Verdana", "SFUI", "Tenacityw");
+    public static final ModeSetting fontMode = new ModeSetting("ArrayList Font", "MC", "MC", "Product Sans Regular", "Product Sans Medium", "Product Sans Bold", "Verdana", "SFUI", "Tenacity", "Hack");
     public static final ModeSetting suffixMode = new ModeSetting("Suffix", "Space", "Space", "-", ">", "[ ]");
     public static final BooleanSetting hideVisuals = new BooleanSetting("Hide visuals", true);
     public static final BooleanSetting lowercase = new BooleanSetting("Lowercase", false);
@@ -295,7 +295,8 @@ public class Interface extends Module {
                     Client.INSTANCE.getFontManager().getSize(10, FontManager.Type.PRODUCT_SANS_BOLD);
             case "SFUI" -> Client.INSTANCE.getFontManager().getSize(10, FontManager.Type.SFUI);
             case "Verdana" -> Client.INSTANCE.getFontManager().getSize(10, FontManager.Type.VERDANA);
-            case "Tenacity" -> Client.INSTANCE.getFontManager().getSize(10, FontManager.Type.Tenacity);
+            case "Tenacity" -> Client.INSTANCE.getFontManager().getSize(9, FontManager.Type.Tenacity);
+            case "Hack" -> Client.INSTANCE.getFontManager().getSize(9, FontManager.Type.Hack);
             default -> null;
         };
     }

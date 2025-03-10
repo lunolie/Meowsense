@@ -40,7 +40,7 @@ import net.minecraft.util.math.Direction;
 import lombok.Getter;
 
 public class Scaffold extends Module {
-    public static final ModeSetting rotMode = new ModeSetting("Rotation Mode", "Normal", "Normal", "Grim 1.17", "Back", "None");
+    public static final ModeSetting rotMode = new ModeSetting("Rotation Mode", "Normal", "Normal", "Grim 1.17", "Back", "Sideways", "None");
 
     public static final BooleanSetting sprint = new BooleanSetting("Sprint", false);
     public static final ModeSetting sprintMode = new ModeSetting("Sprint Mode", "Normal", "Normal", "NoPacket", "Watchdog Slow");
@@ -360,6 +360,10 @@ public class Scaffold extends Module {
 
             if (rotMode.isMode("Back")) {
                 rotations = new float[]{mc.player.getYaw() + 180, 83.8f};
+
+             if (rotMode.isMode("Sideways")) {
+                 rotations = new float[]{mc.player.getYaw() - - 134, 84f};
+             }
             }
         }
     }

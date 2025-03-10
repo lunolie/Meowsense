@@ -21,3 +21,4 @@ public final class Main implements ModInitializer {
         System.out.println("Loading Meowsense...");
     }
 }
+
