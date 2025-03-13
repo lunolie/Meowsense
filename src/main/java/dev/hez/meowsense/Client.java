@@ -75,6 +75,7 @@ public final class Client {
         }
 
         try {
+            // Load icons
             ByteBuffer[] icons = new ByteBuffer[]{
                     loadIcon("assets/meowsense/icons/icon-16x16.png"),
                     loadIcon("assets/meowsense/icons/icon-32x32.png"),
@@ -82,49 +83,65 @@ public final class Client {
                     loadIcon("assets/meowsense/icons/icon-128x128.png")
             };
 
+            // Set window icons using GLFW
             try (MemoryStack stack = MemoryStack.stackPush()) {
                 GLFWImage.Buffer iconBuffer = GLFWImage.malloc(icons.length, stack);
                 for (int i = 0; i < icons.length; i++) {
                     GLFWImage icon = iconBuffer.get(i);
-                    int width = icons[i].remaining() / 4;
-                    int height = width;
+                    int width = (int) Math.sqrt(icons[i].remaining() / 4); // Calculate width from buffer size
+                    int height = width; // Assuming square icons
                     icon.set(width, height, icons[i]);
                 }
 
-
+                // Apply the icons to the window
                 GLFW.glfwSetWindowIcon(window.getHandle(), iconBuffer);
             }
         } catch (IOException e) {
-            LOGGER.error("Failed to set window icon: " + e.getMessage());
+            LOGGER.error("Failed to set window icon: " + e.getMessage(), e);
+        } catch (Exception e) {
+            LOGGER.error("Unexpected error while setting window icon: " + e.getMessage(), e);
         }
     }
 
     private ByteBuffer loadIcon(String path) throws IOException {
-        InputStream inputStream = Client.class.getClassLoader().getResourceAsStream(path);
-        if (inputStream == null) {
-            LOGGER.error("Icon not found at path: " + path);
-            throw new IOException("Could not find icon: " + path);
-        }
-        LOGGER.info("Successfully loaded icon: " + path);
-
-        BufferedImage image = ImageIO.read(inputStream);
-        int width = image.getWidth();
-        int height = image.getHeight();
-        int[] pixels = new int[width * height];
-        image.getRGB(0, 0, width, height, pixels, 0, width);
-
-
-        ByteBuffer buffer = ByteBuffer.allocateDirect(width * height * 4);
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int pixel = pixels[y * width + x];
-                buffer.put((byte) ((pixel >> 16) & 0xFF)); // Red
-                buffer.put((byte) ((pixel >> 8) & 0xFF));  // Green
-                buffer.put((byte) (pixel & 0xFF));         // Blue
-                buffer.put((byte) ((pixel >> 24) & 0xFF)); // Alpha
+        // Load the icon from the resource path
+        try (InputStream inputStream = Client.class.getClassLoader().getResourceAsStream(path)) {
+            if (inputStream == null) {
+                LOGGER.error("Icon not found at path: " + path);
+                throw new IOException("Could not find icon: " + path);
             }
+
+            // Read the image
+            BufferedImage image = ImageIO.read(inputStream);
+            if (image == null) {
+                LOGGER.error("Failed to read icon from path: " + path);
+                throw new IOException("Invalid or unsupported image format: " + path);
+            }
+
+            LOGGER.info("Successfully loaded icon: " + path);
+
+            // Extract pixel data
+            int width = image.getWidth();
+            int height = image.getHeight();
+            int[] pixels = new int[width * height];
+            image.getRGB(0, 0, width, height, pixels, 0, width);
+
+            // Convert pixel data to ByteBuffer
+            ByteBuffer buffer = ByteBuffer.allocateDirect(width * height * 4);
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    int pixel = pixels[y * width + x];
+                    buffer.put((byte) ((pixel >> 16) & 0xFF)); // Red
+                    buffer.put((byte) ((pixel >> 8) & 0xFF));  // Green
+                    buffer.put((byte) (pixel & 0xFF));         // Blue
+                    buffer.put((byte) ((pixel >> 24) & 0xFF)); // Alpha
+                }
+            }
+            buffer.flip(); // Prepare buffer for reading
+            return buffer;
+        } catch (IOException e) {
+            LOGGER.error("Failed to load icon from path: " + path, e);
+            throw e; // Re-throw the exception for handling in the caller
         }
-        buffer.flip();
-        return buffer;
     }
 }
