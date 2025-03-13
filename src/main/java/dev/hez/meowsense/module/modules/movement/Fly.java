@@ -5,11 +5,7 @@ import dev.hez.meowsense.event.bus.annotations.EventLink;
 import dev.hez.meowsense.event.impl.player.EventTickPre;
 import dev.hez.meowsense.module.ModuleCategory;
 import dev.hez.meowsense.module.Module;
-import dev.hez.meowsense.module.modules.movement.fly.AirWalkFly;
-import dev.hez.meowsense.module.modules.movement.fly.GrimBoatFly;
-import dev.hez.meowsense.module.modules.movement.fly.VanillaFly;
-import dev.hez.meowsense.module.modules.movement.fly.VulcanGlideFly;
-import dev.hez.meowsense.module.modules.movement.fly.JumpFly;
+import dev.hez.meowsense.module.modules.movement.fly.*;
 import dev.hez.meowsense.module.setting.impl.NumberSetting;
 import dev.hez.meowsense.module.setting.impl.newmodesetting.NewModeSetting;
 import dev.hez.meowsense.utils.mc.PlayerUtil; // Import PlayerUtil
@@ -20,7 +16,8 @@ public class Fly extends Module {
             new AirWalkFly("Air Walk", this),
             new GrimBoatFly("Grim Boat", this),
             new VulcanGlideFly("Vulcan Glide", this),
-            new JumpFly("AirJump", this));
+            new JumpFly("AirJump", this),
+            new VulcanBoat("Vulcan Boat", this));
 
     public final NumberSetting speed = new NumberSetting("Speed", 0, 5, 1, 0.001);
 
