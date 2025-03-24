@@ -25,6 +25,7 @@ import dev.hez.meowsense.utils.mc.*;
 import dev.hez.meowsense.utils.rotation.RotationUtils;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.client.util.math.Vector2f;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
@@ -40,7 +41,7 @@ import net.minecraft.util.math.Direction;
 import lombok.Getter;
 
 public class Scaffold extends Module {
-    public static final ModeSetting rotMode = new ModeSetting("Rotation Mode", "Normal", "Normal", "Grim 1.17", "Back", "Sideways", "None");
+    public static final ModeSetting rotMode = new ModeSetting("Rotation Mode", "Normal", "Normal", "Grim 1.17", "Back", "Sideways", "None", "Godbridge");
 
     public static final BooleanSetting sprint = new BooleanSetting("Sprint", false);
     public static final ModeSetting sprintMode = new ModeSetting("Sprint Mode", "Normal", "Normal", "NoPacket", "Watchdog Slow");
@@ -342,31 +343,32 @@ public class Scaffold extends Module {
         }
     }
 
+   private void updateRots() {
+       if (rotMode.isMode("None")) {
+           return;
+       }
 
-    private void updateRots() {
-        if (rotMode.isMode("None")) {
-            return;
-        }
+       if (hypixelKeepYDelay > 0) {
+           rotations = new float[]{(float) (mc.player.getYaw() - getRandom() * 5), MathUtils.clamp_float((float) (mc.player.getPitch() - getRandom() * 5), -90, 90)};
+           return;
+       }
 
-        if (hypixelKeepYDelay > 0) {
-            rotations = new float[]{(float) (mc.player.getYaw() - getRandom() * 5), MathUtils.clamp_float((float) (mc.player.getPitch() - getRandom() * 5), -90, 90)};
-            return;
-        }
+       if (blockData != null) {
+           if (rotMode.isMode("Normal") || rotMode.isMode("Grim 1.17")) {
+               getRotations();
+           }
 
-        if (blockData != null) {
-            if (rotMode.isMode("Normal") || rotMode.isMode("Grim 1.17")) {
-                getRotations();
-            }
+           if (rotMode.isMode("Back")) {
+               rotations = new float[]{mc.player.getYaw() + 180, 83.8f};
+           }
 
-            if (rotMode.isMode("Back")) {
-                rotations = new float[]{mc.player.getYaw() + 180, 83.8f};
-
-             if (rotMode.isMode("Sideways")) {
-                 rotations = new float[]{mc.player.getYaw() - - 134, 84f};
-             }
-            }
-        }
-    }
+           if (rotMode.isMode("Sideways")) {
+               float yaw = mc.player.getYaw() + 45; // Adjust yaw to be closer to 45 degrees
+               float pitch = 90; // Set pitch to 90 for a sideways look
+               rotations = new float[]{yaw, pitch};
+           }
+       }
+   }
 
     public void getRotations() {
         if (RayTraceUtils.isLookingAtBlock(blockData.getFacing(), blockData.getPosition(), true, 5, rotations[0], rotations[1])) {
@@ -396,6 +398,7 @@ public class Scaffold extends Module {
             this.rotations[1] = rotations[1];
         }
     }
+
 
     private void place() {
         doHypixelPlace();

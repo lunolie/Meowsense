@@ -100,7 +100,7 @@ public class Interface extends Module {
                     break;
 
                 case "Gamesense":
-                    String text = "§f" + watermarkText.getValue() + "§rsense §8| §f " + ("user") + "§7 (" + ("1.1") + ") §8 | §f " + getIP();
+                    String text = "§f" + watermarkText.getValue() + "§rsense §8| §f " + " (" + ("1.2") + ") §8 | §f " + getIP();
                     int padding = 2;
                     int offsetX = 4;
                     int offsetY = 4;
