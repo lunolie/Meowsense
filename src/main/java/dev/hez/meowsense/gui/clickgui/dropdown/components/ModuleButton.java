@@ -1,7 +1,7 @@
-package dev.hez.meowsense.gui.clickgui.old.components;
+package dev.hez.meowsense.gui.clickgui.dropdown.components;
 
-import dev.hez.meowsense.gui.clickgui.old.Window;
-import dev.hez.meowsense.gui.clickgui.old.components.settings.*;
+import dev.hez.meowsense.gui.clickgui.dropdown.Window;
+import dev.hez.meowsense.gui.clickgui.dropdown.components.settings.*;
 import dev.hez.meowsense.module.Module;
 import dev.hez.meowsense.module.setting.*;
 import dev.hez.meowsense.module.setting.impl.*;
@@ -16,7 +16,7 @@ import java.util.List;
 
 public final class ModuleButton {
     public List<RenderableSetting> settings = new ArrayList<>();
-    public dev.hez.meowsense.gui.clickgui.old.Window parent;
+    public dev.hez.meowsense.gui.clickgui.dropdown.Window parent;
     public Module module;
     public int offset;
     public boolean extended;

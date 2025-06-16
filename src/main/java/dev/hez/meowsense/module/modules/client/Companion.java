@@ -22,7 +22,7 @@ public class Companion extends Module {
     public Companion() {
         super("Companion", "A cute companion if you feel lonely!", 0, ModuleCategory.CLIENT);
 
-        for (int i = 1; i <= 39; i++) { // 39 frames
+        for (int i = 1; i <= 39; i++) {
             gifFrames.add(Identifier.of("meowsense", "cha/frames/frame" + i + ".png"));
         }
     }
@@ -37,7 +37,7 @@ public class Companion extends Module {
         int imageHeight = 100;
 
         int x = 0;
-        int y = 50;
+        int y = 40;
 
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastFrameTime >= FRAME_DELAY) {

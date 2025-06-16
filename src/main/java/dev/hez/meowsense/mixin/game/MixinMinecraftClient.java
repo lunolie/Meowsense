@@ -5,7 +5,6 @@ import dev.hez.meowsense.event.impl.input.EventHandleInput;
 import dev.hez.meowsense.event.impl.player.EventTickPost;
 import dev.hez.meowsense.event.impl.player.EventTickPre;
 import dev.hez.meowsense.event.impl.world.EventWorldChange;
-import dev.hez.meowsense.gui.clickgui.imgui.ImGuiImpl;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.RunArgs;
 import net.minecraft.client.world.ClientWorld;
@@ -47,7 +46,6 @@ public abstract class MixinMinecraftClient {
     void postWindowInit(RunArgs args, CallbackInfo ci) {
         try {
             Client.INSTANCE.getFontManager().initialize();
-            ImGuiImpl.initialize(MinecraftClient.getInstance().getWindow().getHandle());
         } catch (Exception e) {
             e.printStackTrace();
         }

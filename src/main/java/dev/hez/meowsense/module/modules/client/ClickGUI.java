@@ -1,6 +1,5 @@
 package dev.hez.meowsense.module.modules.client;
 
-import dev.hez.meowsense.gui.clickgui.imgui.ClickGui;
 import dev.hez.meowsense.module.ModuleCategory;
 import dev.hez.meowsense.module.Module;
 import dev.hez.meowsense.module.setting.impl.ModeSetting;
@@ -8,7 +7,7 @@ import org.lwjgl.glfw.GLFW;
 
 public class ClickGUI extends Module {
     private boolean didInitImgui = false;
-    public static final ModeSetting clickguiMode = new ModeSetting("Mode", "ImGui", "ImGui", "Old");
+    public static final ModeSetting clickguiMode = new ModeSetting("Mode", "Dropdown",  "Dropdown");
 
     public ClickGUI() {
         super("ClickGui", "Click Gui", GLFW.GLFW_KEY_RIGHT_SHIFT, ModuleCategory.CLIENT);
@@ -17,17 +16,9 @@ public class ClickGUI extends Module {
 
     @Override
     public void onEnable() {
-        if (clickguiMode.isMode("ImGui")) {
-            if (mc.getWindow() != null && !didInitImgui) {
-                //ImGuiImpl.initialize(mc.getWindow().getHandle());
-                didInitImgui = true;
-            }
-            mc.setScreen(new ClickGui());
-            this.toggle();
-        }
 
-        if (clickguiMode.isMode("Old")) {
-            mc.setScreen(new dev.hez.meowsense.gui.clickgui.old.ClickGui());
+        if (clickguiMode.isMode("Dropdown")) {
+            mc.setScreen(new dev.hez.meowsense.gui.clickgui.dropdown.ClickGui());
             this.toggle();
         }
         super.onEnable();
