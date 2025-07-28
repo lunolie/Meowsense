@@ -20,7 +20,6 @@ public class CommandManager {
         commands.add(new ConfigCommand());
         commands.add(new BindListCommand());
         commands.add(new BindClearCommand());
-        commands.add(new ToggleCommand());
     }
 
     public static String[] removeElement(String[] input, int indexToDelete) {

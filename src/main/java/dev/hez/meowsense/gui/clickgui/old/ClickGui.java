@@ -1,4 +1,4 @@
-package dev.hez.meowsense.gui.clickgui.dropdown;
+package dev.hez.meowsense.gui.clickgui.old;
 
 import dev.hez.meowsense.module.ModuleCategory;
 import dev.hez.meowsense.utils.render.RenderUtils;
