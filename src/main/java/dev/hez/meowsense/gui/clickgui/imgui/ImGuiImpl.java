@@ -104,68 +104,73 @@ public class ImGuiImpl {
     }
 
     private static void setDarkTheme() {
-        setColColor(ImGuiCol.Text, new Color(255, 255, 255, 255)); // White text
-        setColColor(ImGuiCol.TextDisabled, new Color(128, 128, 128, 255)); // Gray disabled text
-        setColColor(ImGuiCol.WindowBg, new Color(18, 18, 24, 255)); // Dark background
-        setColColor(ImGuiCol.ChildBg, new Color(0, 0, 0, 0)); // Transparent child background
-        setColColor(ImGuiCol.PopupBg, new Color(30, 30, 40, 255)); // Dark popup background
-        setColColor(ImGuiCol.Border, new Color(80, 80, 100, 255)); // Light purple border
-        setColColor(ImGuiCol.BorderShadow, new Color(0, 0, 0, 0)); // No border shadow
+        int alpha = 240;
 
-        // Frame colors
-        setColColor(ImGuiCol.FrameBg, new Color(40, 40, 50, 255)); // Dark frame background
-        setColColor(ImGuiCol.FrameBgHovered, new Color(90, 70, 130, 255)); // Purple hovered frame
-        setColColor(ImGuiCol.FrameBgActive, new Color(110, 90, 150, 255)); // Purple active frame
+        Color darkBg = new Color(18, 18, 18, alpha);
+        Color darkerBg = new Color(12, 12, 12, alpha);
+        Color lightText = new Color(240, 240, 240, 255);
+        Color mutedText = new Color(180, 180, 180, 255);
+        Color border = new Color(45, 45, 45, 255);
 
-        // Title bar colors
-        setColColor(ImGuiCol.TitleBg, new Color(50, 40, 70, 255)); // Dark purple title bar
-        setColColor(ImGuiCol.TitleBgActive, new Color(70, 50, 90, 255)); // Brighter purple active title bar
-        setColColor(ImGuiCol.TitleBgCollapsed, new Color(30, 20, 50, 255)); // Darker collapsed title bar
+        Color tabBg = new Color(35, 35, 35, 255);
+        Color frameBg = new Color(30, 30, 30, 255);
+        Color frameHovered = new Color(45, 45, 45, 255);
+        Color frameActive = new Color(35, 35, 35, 255);
+        Color titleBg = new Color(20, 20, 20, 255);
+        Color titleActive = new Color(25, 25, 25, 255);
+        Color titleCollapsed = new Color(15, 15, 15, 255);
+        Color scrollbarBg = new Color(15, 15, 15, 255);
+        Color scrollbarGrab = new Color(50, 50, 50, 255);
+        Color scrollbarGrabHovered = new Color(60, 60, 60, 255);
+        Color scrollbarGrabActive = new Color(70, 70, 70, 255);
+        Color header = new Color(40, 40, 40, 255);
 
-        // Scrollbar colors
-        setColColor(ImGuiCol.ScrollbarBg, new Color(20, 20, 30, 255)); // Dark scrollbar background
-        setColColor(ImGuiCol.ScrollbarGrab, new Color(90, 70, 130, 255)); // Purple scrollbar grab
-        setColColor(ImGuiCol.ScrollbarGrabHovered, new Color(110, 90, 150, 255)); // Brighter purple hovered grab
-        setColColor(ImGuiCol.ScrollbarGrabActive, new Color(130, 110, 170, 255)); // Brightest purple active grab
+        // Fallback cherryColor (e.g. if not dynamically retrieved from ClickGuiModule)
+        Color cherryColor = new Color(160, 50, 50); // Dark red accent
 
-        // Button colors
-        setColColor(ImGuiCol.Button, new Color(90, 70, 130, 255)); // Purple button
-        setColColor(ImGuiCol.ButtonHovered, new Color(110, 90, 150, 255)); // Brighter purple hovered button
-        setColColor(ImGuiCol.ButtonActive, new Color(130, 110, 170, 255)); // Brightest purple active button
+        // Apply ImGui colors
+        setColColor(ImGuiCol.Text, lightText);
+        setColColor(ImGuiCol.TextDisabled, mutedText);
 
-        // Header colors
-        setColColor(ImGuiCol.Header, new Color(90, 70, 130, 255)); // Purple header
-        setColColor(ImGuiCol.HeaderHovered, new Color(110, 90, 150, 255)); // Brighter purple hovered header
-        setColColor(ImGuiCol.HeaderActive, new Color(130, 110, 170, 255)); // Brightest purple active header
+        setColColor(ImGuiCol.WindowBg, darkBg);
+        setColColor(ImGuiCol.ChildBg, darkerBg);
+        setColColor(ImGuiCol.PopupBg, darkBg);
 
-        // Separator colors
-        setColColor(ImGuiCol.Separator, new Color(80, 80, 100, 255)); // Light purple separator
-        setColColor(ImGuiCol.SeparatorHovered, new Color(110, 90, 150, 255)); // Brighter purple hovered separator
-        setColColor(ImGuiCol.SeparatorActive, new Color(130, 110, 170, 255)); // Brightest purple active separator
+        setColColor(ImGuiCol.Border, border);
+        setColColor(ImGuiCol.BorderShadow, new Color(0, 0, 0, 0));
 
-        // Resize grip colors
-        setColColor(ImGuiCol.ResizeGrip, new Color(90, 70, 130, 255)); // Purple resize grip
-        setColColor(ImGuiCol.ResizeGripHovered, new Color(110, 90, 150, 255)); // Brighter purple hovered grip
-        setColColor(ImGuiCol.ResizeGripActive, new Color(130, 110, 170, 255)); // Brightest purple active grip
+        setColColor(ImGuiCol.FrameBg, frameBg);
+        setColColor(ImGuiCol.FrameBgHovered, frameHovered);
+        setColColor(ImGuiCol.FrameBgActive, frameActive);
 
-        // Tab colors
-        setColColor(ImGuiCol.Tab, new Color(50, 40, 70, 255)); // Dark purple tab
-        setColColor(ImGuiCol.TabHovered, new Color(90, 70, 130, 255)); // Purple hovered tab
-        setColColor(ImGuiCol.TabActive, new Color(110, 90, 150, 255)); // Brighter purple active tab
-        setColColor(ImGuiCol.TabUnfocused, new Color(30, 20, 50, 255)); // Darker unfocused tab
-        setColColor(ImGuiCol.TabUnfocusedActive, new Color(70, 50, 90, 255)); // Brighter unfocused active tab
+        setColColor(ImGuiCol.Button, tabBg);
+        setColColor(ImGuiCol.ButtonHovered, cherryColor);
+        setColColor(ImGuiCol.ButtonActive, cherryColor);
 
-        // Plot colors
-        setColColor(ImGuiCol.PlotLines, new Color(90, 70, 130, 255)); // Purple plot lines
-        setColColor(ImGuiCol.PlotLinesHovered, new Color(110, 90, 150, 255)); // Brighter purple hovered plot lines
-        setColColor(ImGuiCol.PlotHistogram, new Color(90, 70, 130, 255)); // Purple histogram
-        setColColor(ImGuiCol.PlotHistogramHovered, new Color(110, 90, 150, 255)); // Brighter purple hovered histogram
+        setColColor(ImGuiCol.Header, header);
+        setColColor(ImGuiCol.HeaderHovered, cherryColor);
+        setColColor(ImGuiCol.HeaderActive, cherryColor);
 
-        // Text selection background
-        setColColor(ImGuiCol.TextSelectedBg, new Color(90, 70, 130, 100)); // Semi-transparent purple text selection
+        setColColor(ImGuiCol.TitleBg, titleBg);
+        setColColor(ImGuiCol.TitleBgActive, titleActive);
+        setColColor(ImGuiCol.TitleBgCollapsed, titleCollapsed);
 
-        // Navigation highlight
-        setColColor(ImGuiCol.NavHighlight, new Color(110, 90, 150, 255)); // Brighter purple navigation highlight
+        setColColor(ImGuiCol.ScrollbarBg, scrollbarBg);
+        setColColor(ImGuiCol.ScrollbarGrab, scrollbarGrab);
+        setColColor(ImGuiCol.ScrollbarGrabHovered, scrollbarGrabHovered);
+        setColColor(ImGuiCol.ScrollbarGrabActive, scrollbarGrabActive);
+
+        setColColor(ImGuiCol.Tab, tabBg);
+        setColColor(ImGuiCol.TabHovered, cherryColor);
+        setColColor(ImGuiCol.TabActive, tabBg);
+
+        setColColor(ImGuiCol.CheckMark, cherryColor);
+        setColColor(ImGuiCol.SliderGrab, cherryColor);
+        setColColor(ImGuiCol.SliderGrabActive, cherryColor);
+
+        setColColor(ImGuiCol.TextSelectedBg, new Color(cherryColor.getRed(), cherryColor.getGreen(), cherryColor.getBlue(), 50));
+        setColColor(ImGuiCol.NavHighlight, new Color(cherryColor.getRed(), cherryColor.getGreen(), cherryColor.getBlue(), 100));
+        setColColor(ImGuiCol.ModalWindowDimBg, new Color(10, 10, 10, 180));
     }
 
     private static void setColColor(int imGuiCol, Color color) {

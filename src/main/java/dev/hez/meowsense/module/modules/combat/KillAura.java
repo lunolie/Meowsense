@@ -24,6 +24,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ShieldItem;
 import net.minecraft.item.SwordItem;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
@@ -65,7 +66,7 @@ public class KillAura extends Module {
     public static final RangeSetting attackSpeed = new RangeSetting("CPS", 0, 25, 10, 12, 0.1);
     public static final BooleanSetting dropCps = new BooleanSetting("Drop CPS", false);
     public static final BooleanSetting dontAttackWhileBlocking = new BooleanSetting("Dont attack while blocking", false);
-    public static final ModeSetting autoBlockMode = new ModeSetting("AutoBlock", "Off", "Off", "Vanilla", "Interact", "Reblock", "Watchdog", "NCP", "Legit");
+    public static final ModeSetting autoBlockMode = new ModeSetting("AutoBlock", "Off", "Off", "Vanilla", "Interact", "Reblock", "Watchdog", "NCP", "Legit", "OldNCP");
     public static final BooleanSetting renderFakeAnim = new BooleanSetting("Fake autoblock", false);
     public static final BooleanSetting attackTeamMates = new BooleanSetting("Attack team mates", false);
     public static final BooleanSetting perfectHit = new BooleanSetting("Perfect Hit", false);
@@ -383,7 +384,13 @@ public class KillAura extends Module {
                     this.unblock();
                 }
                 break;
-
+            case "OldNCP":
+                if (!blocking) {
+                    break;
+                }
+                PacketUtils.releaseUseItem(true);
+                this.blocking = false;
+                break;
             case "Watchdog":
                 mc.options.useKey.setPressed(true);
 

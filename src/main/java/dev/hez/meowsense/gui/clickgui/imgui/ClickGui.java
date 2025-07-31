@@ -18,6 +18,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
+
 public class ClickGui extends Screen {
     private final ImString searchText = new ImString(500);
     private ModuleCategory moduleCategory;
@@ -33,210 +34,221 @@ public class ClickGui extends Screen {
         super.close();
     }
 
-   @Override
-   public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-       ImGuiImpl.render(io -> {
-           int windowFlags = ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar;
+    @Override
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        ImGuiImpl.render(io -> {
+            int windowFlags = ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar;
 
-           float windowWidth = 300;
-           float windowHeight = 400;
-           float xPos = 10; // Adjusted initial x position
-           float yPos = 30; // Adjusted initial y position to be slightly lower
+            if (ImGui.begin("Meow", windowFlags)) {
+                for (ModuleCategory moduleCategory1 : ModuleCategory.values()) {
+                    ImGui.beginTabBar("Main");
 
-           for (ModuleCategory category : ModuleCategory.values()) {
-               ImGui.setNextWindowPos(xPos, yPos);
-               ImGui.setNextWindowSize(windowWidth, windowHeight);
+                    if (ImGui.beginTabItem(moduleCategory1.name + "##tab")) {
+                        moduleCategory = moduleCategory1;
+                        ImGui.endTabItem();
+                    }
 
-               if (ImGui.begin(category.name(), windowFlags)) {
-                   for (Module module : Client.INSTANCE.getModuleManager().getModulesInCategory(category)) {
-                       ImGui.setCursorPosX(ImGui.getCursorPosX() + 25);
-                       if (ImGui.collapsingHeader(module.getName())) {
-                           drawToggle(module);
+                    ImGui.endTabBar();
+                }
 
-                           this.module = module;
+                for (Module module : Client.INSTANCE.getModuleManager().getModulesInCategory(moduleCategory)) {
+                    ImGui.setCursorPosX(ImGui.getCursorPosX() + 25);
+                    if (ImGui.collapsingHeader(module.getName())) {
+                        drawToggle(module);
 
-                           ImGui.text(module.getName());
-                           ImGui.text("(" + module.getDescription() + ")");
+                        this.module = module;
 
-                           if (ImGui.button(keyBindingModule == module ? "Listening..." : "Key " + GLFW.glfwGetKeyName(module.getKey(), 0))) {
-                               keyBindingModule = (keyBindingModule == module) ? null : module;
-                           }
+                        ImGui.text(module.getDescription());
 
-                           ImGui.separator();
+                        ImGui.sameLine();
 
-                           for (Setting property : module.getSettings()) {
-                               boolean shouldContinue = false;
+                        if (ImGui.button(keyBindingModule == module ? "Listening..." : "Key " + GLFW.glfwGetKeyName(module.getKey(), 0))) {
+                            keyBindingModule = (keyBindingModule == module) ? null : module;
+                        }
 
-                               if (!property.getDependencyBoolSettings().isEmpty()) {
-                                   for (int i = 0; i < property.getDependencyBoolSettings().size(); i++) {
-                                       Setting dependency = property.getDependencyBoolSettings().get(i);
-                                       boolean expectedValue = property.getDependencyBools().get(i);
+                        ImGui.separator();
 
-                                       if (dependency instanceof BooleanSetting && ((BooleanSetting) dependency).getValue() != expectedValue) {
-                                           shouldContinue = true;
-                                           break;
-                                       }
-                                   }
-                               }
+                        for (Setting property : module.getSettings()) {
+                            boolean shouldContinue = false;
 
-                               if (!property.getDependencyModeSettings().isEmpty()) {
-                                   for (int i = 0; i < property.getDependencyModeSettings().size(); i++) {
-                                       Setting dependency = property.getDependencyModeSettings().get(i);
-                                       String expectedMode = property.getDependencyModes().get(i);
+                            if (!property.getDependencyBoolSettings().isEmpty()) {
+                                for (int i = 0; i < property.getDependencyBoolSettings().size(); i++) {
+                                    Setting dependency = property.getDependencyBoolSettings().get(i);
+                                    boolean expectedValue = property.getDependencyBools().get(i);
 
-                                       if (!(dependency instanceof ModeSetting && ((ModeSetting) dependency).isMode(expectedMode))) {
-                                           shouldContinue = true;
-                                           break;
-                                       }
-                                   }
-                               }
+                                    if (dependency instanceof BooleanSetting && ((BooleanSetting) dependency).getValue() != expectedValue) {
+                                        shouldContinue = true;
+                                        break;
+                                    }
+                                }
+                            }
 
-                               if (!property.getDependencyMultiModeSettings().isEmpty()) {
-                                   for (int i = 0; i < property.getDependencyMultiModeSettings().size(); i++) {
-                                       Setting dependency = property.getDependencyMultiModeSettings().get(i);
-                                       String expectedMode = property.getDependencyMultiModes().get(i);
+                            if (!property.getDependencyModeSettings().isEmpty()) {
+                                for (int i = 0; i < property.getDependencyModeSettings().size(); i++) {
+                                    Setting dependency = property.getDependencyModeSettings().get(i);
+                                    String expectedMode = property.getDependencyModes().get(i);
 
-                                       if (!(dependency instanceof MultiModeSetting && ((MultiModeSetting) dependency).isModeSelected(expectedMode))) {
-                                           shouldContinue = true;
-                                           break;
-                                       }
-                                   }
-                               }
+                                    if (!(dependency instanceof ModeSetting && ((ModeSetting) dependency).isMode(expectedMode))) {
+                                        shouldContinue = true;
+                                        break;
+                                    }
+                                }
+                            }
 
-                               if (!property.getDependencyNewModeSettings().isEmpty()) {
-                                   for (int i = 0; i < property.getDependencyNewModeSettings().size(); i++) {
-                                       Setting dependency = property.getDependencyNewModeSettings().get(i);
-                                       String expectedMode = property.getDependencyNewModes().get(i);
+                            if (!property.getDependencyMultiModeSettings().isEmpty()) {
+                                for (int i = 0; i < property.getDependencyMultiModeSettings().size(); i++) {
+                                    Setting dependency = property.getDependencyMultiModeSettings().get(i);
+                                    String expectedMode = property.getDependencyMultiModes().get(i);
 
-                                       if (!(dependency instanceof NewModeSetting && ((NewModeSetting) dependency).isMode(expectedMode))) {
-                                           shouldContinue = true;
-                                           break;
-                                       }
-                                   }
-                               }
+                                    if (!(dependency instanceof MultiModeSetting && ((MultiModeSetting) dependency).isModeSelected(expectedMode))) {
+                                        shouldContinue = true;
+                                        break;
+                                    }
+                                }
+                            }
 
-                               if (shouldContinue) {
-                                   continue;
-                               }
+                            if (!property.getDependencyNewModeSettings().isEmpty()) {
+                                for (int i = 0; i < property.getDependencyNewModeSettings().size(); i++) {
+                                    Setting dependency = property.getDependencyNewModeSettings().get(i);
+                                    String expectedMode = property.getDependencyNewModes().get(i);
 
-                               if (property instanceof BooleanSetting booleanSetting) {
-                                   ImGui.text(property.getName());
-                                   if (ImGui.checkbox("##" + property.getName(), booleanSetting.getValue())) {
-                                       booleanSetting.setValue(!booleanSetting.getValue());
-                                   }
-                               }
+                                    if (!(dependency instanceof NewModeSetting && ((NewModeSetting) dependency).isMode(expectedMode))) {
+                                        shouldContinue = true;
+                                        break;
+                                    }
+                                }
+                            }
 
-                               if (property instanceof NumberSetting numberProperty) {
-                                   ImGui.text(numberProperty.getName());
-                                   ImFloat imFloat = new ImFloat((float) numberProperty.getValue());
+                            if (shouldContinue) {
+                                continue;
+                            }
 
-                                   if (ImGui.sliderFloat("##" + numberProperty.getName(), imFloat.getData(), (float) numberProperty.getMin(), (float) numberProperty.getMax())) {
-                                       numberProperty.setValue(imFloat.get());
-                                   }
-                               }
+                            if (property instanceof BooleanSetting booleanSetting) {
+                                if (ImGui.checkbox(property.getName(), booleanSetting.getValue())) {
+                                    booleanSetting.setValue(!booleanSetting.getValue());
+                                }
+                            }
 
-                               if (property instanceof RangeSetting rangeProperty) {
-                                   ImGui.text(rangeProperty.getName());
-                                   float[] imFloats = new float[]{(float) rangeProperty.getValueMin(), (float) rangeProperty.getValueMax()};
+                            if (property instanceof NumberSetting numberProperty) {
+                                ImFloat imFloat = new ImFloat((float) numberProperty.getValue());
 
-                                   if (ImGui.sliderFloat2("##" + rangeProperty.getName(), imFloats, (float) rangeProperty.getMin(), (float) rangeProperty.getMax())) {
-                                       rangeProperty.setValueMin(imFloats[0]);
-                                       rangeProperty.setValueMax(imFloats[1]);
-                                   }
-                               }
+                                if (ImGui.sliderFloat("##" + numberProperty.getName(), imFloat.getData(), (float) numberProperty.getMin(), (float) numberProperty.getMax())) {
+                                    numberProperty.setValue(imFloat.get());
+                                }
 
-                               if (property instanceof StringSetting stringSetting) {
-                                   ImGui.text(stringSetting.getName());
-                                   ImString imString = new ImString(stringSetting.getValue(), 500);
+                                ImGui.sameLine();
+                                ImGui.text(numberProperty.getName());
 
-                                   if (ImGui.inputText("##" + stringSetting.getName(), imString, ImGuiInputTextFlags.None)) {
-                                       stringSetting.setValue(imString.get());
-                                   }
-                               }
+                                imFloat.getData()[0] = (float) numberProperty.getValue();
+                            }
 
-                               if (property instanceof ModeSetting modeProperty) {
-                                   ImGui.text(modeProperty.getName());
-                                   String comboId = "##" + modeProperty.getName() + "_" + module.getName();
+                            if (property instanceof RangeSetting rangeProperty) {
+                                float[] imFloats = new float[]{(float) rangeProperty.getValueMin(), (float) rangeProperty.getValueMax()};
 
-                                   if (ImGui.beginCombo(comboId, modeProperty.getMode())) {
-                                       ImGui.inputTextWithHint(comboId + "_search", "Search For Modes.", searchText, ImGuiInputTextFlags.None);
-                                       String search = searchText.get().toLowerCase();
+                                if (ImGui.sliderFloat2("##" + rangeProperty.getName(), imFloats, (float) rangeProperty.getMin(), (float) rangeProperty.getMax())) {
+                                    rangeProperty.setValueMin(imFloats[0]);
+                                    rangeProperty.setValueMax(imFloats[1]);
+                                }
 
-                                       for (String mode : modeProperty.getModes()) {
-                                           if (search.isEmpty() || mode.toLowerCase().contains(search)) {
-                                               if (ImGui.selectable(mode)) {
-                                                   modeProperty.setMode(mode);
-                                                   searchText.set(new ImString(500));
-                                               }
-                                           }
-                                       }
+                                ImGui.sameLine();
+                                ImGui.text(rangeProperty.getName());
 
-                                       ImGui.endCombo();
-                                   }
-                               }
+                                imFloats[0] = (float) rangeProperty.getValueMin();
+                                imFloats[1] = (float) rangeProperty.getValueMax();
+                            }
 
-                               if (property instanceof NewModeSetting newModeProperty) {
-                                   ImGui.text(newModeProperty.getName());
-                                   String comboId = "##" + newModeProperty.getName() + "_" + module.getName();
+                            if (property instanceof StringSetting stringSetting) {
+                                ImString imString = new ImString(stringSetting.getValue(), 500);
 
-                                   if (ImGui.beginCombo(comboId, newModeProperty.getCurrentMode().getName())) {
-                                       ImGui.inputTextWithHint(comboId + "_search", "Search For Modes.", searchText, ImGuiInputTextFlags.None);
-                                       String search = searchText.get().toLowerCase();
+                                if (ImGui.inputText("##" + stringSetting.getName(), imString, ImGuiInputTextFlags.None)) {
+                                    stringSetting.setValue(imString.get());
+                                }
 
-                                       for (String mode : newModeProperty.getModeNames()) {
-                                           if (search.isEmpty() || mode.toLowerCase().contains(search)) {
-                                               if (ImGui.selectable(mode)) {
-                                                   newModeProperty.setMode(mode);
-                                                   searchText.set(new ImString(500));
-                                               }
-                                           }
-                                       }
+                                ImGui.sameLine();
+                                ImGui.text(stringSetting.getName());
+                            }
 
-                                       ImGui.endCombo();
-                                   }
-                               }
+                            if (property instanceof ModeSetting modeProperty) {
+                                String comboId = "##" + modeProperty.getName() + "_" + module.getName();
 
-                               if (property instanceof MultiModeSetting multiModeProperty) {
-                                   ImGui.text(multiModeProperty.getName());
-                                   String comboId = "##" + multiModeProperty.getName() + "_" + module.getName();
+                                if (ImGui.beginCombo(comboId, modeProperty.getMode())) {
+                                    ImGui.inputTextWithHint(comboId + "_search", "Search For Modes.", searchText, ImGuiInputTextFlags.None);
+                                    String search = searchText.get().toLowerCase();
 
-                                   if (ImGui.beginCombo(comboId, "Select Modes")) {
-                                       ImGui.inputTextWithHint(comboId + "_search", "Search For Modes.", searchText, ImGuiInputTextFlags.None);
-                                       String search = searchText.get().toLowerCase();
+                                    for (String mode : modeProperty.getModes()) {
+                                        if (search.isEmpty() || mode.toLowerCase().contains(search)) {
+                                            if (ImGui.selectable(mode)) {
+                                                modeProperty.setMode(mode);
+                                                searchText.set(new ImString(500));
+                                            }
+                                        }
+                                    }
 
-                                       for (String mode : multiModeProperty.getModes()) {
-                                           if (search.isEmpty() || mode.toLowerCase().contains(search)) {
-                                               boolean isSelected = multiModeProperty.isModeSelected(mode);
-                                               ImGui.selectable(mode, isSelected);
+                                    ImGui.endCombo();
+                                }
+                                ImGui.sameLine();
+                                ImGui.text(modeProperty.getName());
+                            }
 
-                                               if (ImGui.isItemClicked(ImGuiMouseButton.Left)) {
-                                                   if (isSelected) {
-                                                       multiModeProperty.deselectMode(mode);
-                                                   } else {
-                                                       multiModeProperty.selectMode(mode);
-                                                   }
-                                               }
-                                           }
-                                       }
+                            if (property instanceof NewModeSetting newModeProperty) {
+                                String comboId = "##" + newModeProperty.getName() + "_" + module.getName();
 
-                                       ImGui.endCombo();
-                                   }
-                               }
-                           }
-                       } else {
-                           drawToggle(module);
-                       }
-                   }
-                   ImGui.end();
-               }
-               xPos += windowWidth + 10; // Adjust the horizontal spacing between windows
-               if (xPos + windowWidth > context.getScaledWindowWidth()) {
-                   xPos = 10; // Reset x position and move to the next row
-                   yPos += windowHeight + 10; // Move to the next row if the current row is full
-               }
-           }
-       });
-   }
+                                if (ImGui.beginCombo(comboId, newModeProperty.getCurrentMode().getName())) {
+                                    ImGui.inputTextWithHint(comboId + "_search", "Search For Modes.", searchText, ImGuiInputTextFlags.None);
+                                    String search = searchText.get().toLowerCase();
+
+                                    for (String mode : newModeProperty.getModeNames()) {
+                                        if (search.isEmpty() || mode.toLowerCase().contains(search)) {
+                                            if (ImGui.selectable(mode)) {
+                                                newModeProperty.setMode(mode);
+                                                searchText.set(new ImString(500));
+                                            }
+                                        }
+                                    }
+
+                                    ImGui.endCombo();
+                                }
+                                ImGui.sameLine();
+                                ImGui.text(newModeProperty.getName());
+                            }
+
+                            if (property instanceof MultiModeSetting multiModeProperty) {
+                                String comboId = "##" + multiModeProperty.getName() + "_" + module.getName();
+
+                                if (ImGui.beginCombo(comboId, "Select Modes")) {
+                                    ImGui.inputTextWithHint(comboId + "_search", "Search For Modes.", searchText, ImGuiInputTextFlags.None);
+                                    String search = searchText.get().toLowerCase();
+
+                                    for (String mode : multiModeProperty.getModes()) {
+                                        if (search.isEmpty() || mode.toLowerCase().contains(search)) {
+                                            boolean isSelected = multiModeProperty.isModeSelected(mode);
+                                            ImGui.selectable(mode, isSelected);
+
+                                            if (ImGui.isItemClicked(ImGuiMouseButton.Left)) {
+                                                if (isSelected) {
+                                                    multiModeProperty.deselectMode(mode);
+                                                } else {
+                                                    multiModeProperty.selectMode(mode);
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    ImGui.endCombo();
+                                }
+                                ImGui.sameLine();
+                                ImGui.text(multiModeProperty.getName());
+                            }
+
+                        }
+                    } else {
+                        drawToggle(module);
+                    }
+                }
+            }
+            ImGui.end();
+        });
+    }
 
     @Override
     public boolean charTyped(char typedChar, int modifiers) {
