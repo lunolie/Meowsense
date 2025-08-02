@@ -33,7 +33,8 @@ public class Speed extends Module {
             new PolarCollideSpeed("Polar Collide", this),
             new Balancespeed("Balance Timer", this),
             new CubecraftSpeed("Cubecraft", this),
-            new MushMCSpeed("MushMC", this)
+            new MushMCSpeed("MushMC", this),
+            new HypixelHvHSpeed ("Hypixel HvH", this)
     );
 
     // vanilla
@@ -64,9 +65,17 @@ public class Speed extends Module {
     public final BooleanSetting watchdogShouldCancelVelocity = new BooleanSetting("Cancel Velocity", false);
     public final BooleanSetting watchdogNeedDisabler = new BooleanSetting("Need Disabler", true);
 
+    // HypixelHvH
+    public final BooleanSetting hvhHurtBoost = new BooleanSetting("HurtBoost", false);
+    public final NumberSetting hvhHurtBoostHurttime = new NumberSetting("HurtTime", 1, 10, 7, 1);
+    public final NumberSetting hvhHurtBoostSpeed = new NumberSetting("Hurt Speed", 0.5, 2, 0.75, 0.001);
+    public final BooleanSetting hvhLowHop = new BooleanSetting("Lowhop", false);
+    public final BooleanSetting hvhGlide = new BooleanSetting("Glide", false);
+    public final BooleanSetting hvhTimerBoost = new BooleanSetting("Timer Boost", false);
+
     public Speed() {
         super("Speed", "Makes you speedy", 0, ModuleCategory.MOVEMENT);
-        this.addSettings(speedMode, vanillaSpeed, watchdogLowHop, watchdogStrafe, watchdogShouldCancelVelocity, watchdogNeedDisabler, ncpHurtBoost, ncpHurtBoostHurttime, ncpHurtBoostSpeed, ncpLowHop, ncpGlide, ncpTimerBoost, vulcanGroundSpeed); // cubecraftHurtBoost, cubecraftHurtBoostHurttime, cubecraftHurtBoostSpeed, cubecraftLowHop, cubecraftGlide, cubecraftTimerBoost
+        this.addSettings(speedMode, vanillaSpeed, watchdogLowHop, watchdogStrafe, watchdogShouldCancelVelocity, watchdogNeedDisabler, ncpHurtBoost, ncpHurtBoostHurttime, ncpHurtBoostSpeed, ncpLowHop, ncpGlide, ncpTimerBoost, vulcanGroundSpeed, hvhHurtBoost, hvhHurtBoostHurttime, hvhHurtBoostSpeed, hvhLowHop, hvhGlide, hvhTimerBoost); // cubecraftHurtBoost, cubecraftHurtBoostHurttime, cubecraftHurtBoostSpeed, cubecraftLowHop, cubecraftGlide, cubecraftTimerBoost
 
         vanillaSpeed.addDependency(speedMode, "Vanilla");
         vulcanGroundSpeed.addDependency(speedMode, "Vulcan");
@@ -87,6 +96,14 @@ public class Speed extends Module {
         ncpGlide.addDependency(speedMode, "NCP");
         ncpTimerBoost.addDependency(speedMode, "NCP");
 
+        hvhHurtBoost.addDependency(speedMode, "HypixelHvHSpeed");
+        hvhHurtBoostHurttime.addDependency(speedMode, "HypixelHvHSpeed");
+        hvhHurtBoostHurttime.addDependency(hvhHurtBoost, true);
+        hvhHurtBoostSpeed.addDependency(speedMode, "HypixelHvHSpeed");
+        hvhHurtBoostSpeed.addDependency(hvhHurtBoost, true);
+        hvhLowHop.addDependency(speedMode, "HypixelHvHSpeed");
+        hvhGlide.addDependency(speedMode, "HypixelHvHSpeed");
+        hvhTimerBoost.addDependency(speedMode, "HypixelHvHSpeed");
     }
         // cubecraftHurtBoost.addDependency(speedMode, "Cubecraft");
         // cubecraftHurtBoostHurttime.addDependency(speedMode, "Cubecraft");

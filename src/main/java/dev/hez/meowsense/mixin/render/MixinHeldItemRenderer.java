@@ -19,6 +19,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.UseAction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
+import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -158,6 +159,85 @@ public abstract class MixinHeldItemRenderer {
             matrices.multiply((arm == Arm.RIGHT ? RotationAxis.POSITIVE_Y : RotationAxis.NEGATIVE_Y).rotationDegrees(13.365f));
             matrices.multiply((arm == Arm.RIGHT ? RotationAxis.POSITIVE_Z : RotationAxis.NEGATIVE_Z).rotationDegrees(78.05f));
         }
+
+        if (Animations.mode.isMode("Slide")) {
+            // Initial positioning from legacy code
+            matrices.translate(-0.02f, 0.05f, 0.0f);
+
+            // Apply the first person item transform equivalent
+            transformFirstPersonItem(matrices, swingProgress, 0.0f);
+
+            // Apply block transformations equivalent
+            doBlockTransformations(matrices);
+
+            // Main slide positioning
+            matrices.translate(-0.05f, 0.2f, 0.2f);
+
+            // Calculate swing value (equivalent to var9 from legacy code)
+            float swingValue = MathHelper.sin(MathHelper.sqrt(swingProgress) * (float) Math.PI);
+
+            // Apply the swing-based rotations from legacy code
+            // GlStateManager.rotate(-var9 * 70.0f / 2.0f, -8.0f, -0.0f, 9.0f);
+            matrices.multiply(RotationAxis.of(new Vector3f(-8.0f, 0.0f, 9.0f)).rotationDegrees(-swingValue * 70.0f / 2.0f));
+
+            // GlStateManager.rotate(-var9 * 70.0f, 1.0f, -0.4f, -0.0f);
+            matrices.multiply(RotationAxis.of(new Vector3f(1.0f, -0.4f, 0.0f)).rotationDegrees(-swingValue * 70.0f));
+        }
+
+
+
+        if (Animations.mode.isMode("Push")) {
+            matrices.translate(arm == Arm.RIGHT ? -0.1f : 0.1f, 0.15f, -0.05f);
+            float pushSwing = MathHelper.sin(swingProgress * swingProgress * (float) Math.PI);
+            matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(pushSwing * -40.0f));
+            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees((arm == Arm.RIGHT ? 1 : -1) * pushSwing * 25.0f));
+            matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-102.25f));
+            matrices.multiply((arm == Arm.RIGHT ? RotationAxis.POSITIVE_Y : RotationAxis.NEGATIVE_Y).rotationDegrees(13.365f));
+            matrices.multiply((arm == Arm.RIGHT ? RotationAxis.POSITIVE_Z : RotationAxis.NEGATIVE_Z).rotationDegrees(78.05f));
+        }
+
+        if (Animations.mode.isMode("Smooth")) {
+            matrices.translate(arm == Arm.RIGHT ? -0.08f : 0.08f, 0.18f, 0.02f);
+            float smoothSwing = MathHelper.sin(MathHelper.sqrt(swingProgress) * (float) Math.PI);
+            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees((arm == Arm.RIGHT ? 1 : -1) * smoothSwing * 20.0f));
+            matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(smoothSwing * -30.0f));
+            matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees((arm == Arm.RIGHT ? 1 : -1) * smoothSwing * 5.0f));
+            matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-102.25f));
+            matrices.multiply((arm == Arm.RIGHT ? RotationAxis.POSITIVE_Y : RotationAxis.NEGATIVE_Y).rotationDegrees(13.365f));
+            matrices.multiply((arm == Arm.RIGHT ? RotationAxis.POSITIVE_Z : RotationAxis.NEGATIVE_Z).rotationDegrees(78.05f));
+        }
+
+        if (Animations.mode.isMode("Spin")) {
+            matrices.translate(arm == Arm.RIGHT ? -0.1f : 0.1f, 0.2f, 0.0f);
+            float spinProgress = swingProgress * 2.0f; // Make it spin faster
+            float spinAngle = spinProgress * 360.0f; // Full rotation
+            matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees((arm == Arm.RIGHT ? 1 : -1) * spinAngle));
+            matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-102.25f));
+            matrices.multiply((arm == Arm.RIGHT ? RotationAxis.POSITIVE_Y : RotationAxis.NEGATIVE_Y).rotationDegrees(13.365f));
+            matrices.multiply((arm == Arm.RIGHT ? RotationAxis.POSITIVE_Z : RotationAxis.NEGATIVE_Z).rotationDegrees(78.05f));
+        }
+    }
+
+    // Helper method for first person item transformation (equivalent to transformFirstPersonItem call)
+    private void transformFirstPersonItem(MatrixStack matrices, float swingProgress, float equipProgress) {
+        // This mimics the transformFirstPersonItem method behavior
+        float f = MathHelper.sin(swingProgress * swingProgress * (float) Math.PI);
+        float g = MathHelper.sin(MathHelper.sqrt(swingProgress) * (float) Math.PI);
+
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(45.0f));
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(g * 70.0f));
+        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(g * -20.0f));
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(f * -20.0f));
+        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(f * -10.0f));
+    }
+
+    // Helper method for block transformations (equivalent to doBlockTransformations call)
+    private void doBlockTransformations(MatrixStack matrices) {
+        // This mimics the block transformation behavior
+        matrices.translate(-0.5f, 0.2f, 0.0f);
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(30.0f));
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-80.0f));
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(60.0f));
     }
 
     private void applySwingOffsetCustom(MatrixStack matrices, Arm arm, float swingProgress) {

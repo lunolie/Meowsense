@@ -149,7 +149,7 @@ public class FontRenderer implements Closeable {
     }
 
     /**
-     * Draws a string
+     * Draws a string (automatically includes shadow)
      *
      * @param stack The MatrixStack
      * @param s     The string to draw
@@ -158,6 +158,50 @@ public class FontRenderer implements Closeable {
      * @param color Texts color
      */
     public void drawString(MatrixStack stack, String s, float x, float y, Color color) {
+        // Draw shadow first - much more subtle
+        Color shadowColor = new Color(0, 0, 0, Math.max(32, color.getAlpha() / 4)); // Dark shadow with low opacity
+        drawStringInternal(stack, s, x + 1.0f, y + 1.0f, shadowColor);
+
+        // Draw main text on top
+        drawStringInternal(stack, s, x, y, color);
+    }
+
+    /**
+     * Draws a string with shadow (alias for drawString since it already includes shadow)
+     *
+     * @param stack The MatrixStack
+     * @param s     The string to draw
+     * @param x     X coordinate to draw at
+     * @param y     Y coordinate to draw at
+     * @param color Texts color
+     */
+    public void drawStringWithShadow(MatrixStack stack, String s, float x, float y, Color color) {
+        drawString(stack, s, x, y, color);
+    }
+
+    /**
+     * Draws a string with custom shadow offset
+     *
+     * @param stack        The MatrixStack
+     * @param s            The string to draw
+     * @param x            X coordinate to draw at
+     * @param y            Y coordinate to draw at
+     * @param color        Texts color
+     * @param shadowOffset Custom shadow offset (default is 1.0f)
+     */
+    public void drawStringWithShadow(MatrixStack stack, String s, float x, float y, Color color, float shadowOffset) {
+        // Draw shadow first with custom offset - much more subtle
+        Color shadowColor = new Color(0, 0, 0, Math.max(32, color.getAlpha() / 4)); // Dark shadow with low opacity
+        drawStringInternal(stack, s, x + shadowOffset, y + shadowOffset, shadowColor);
+
+        // Draw main text on top
+        drawStringInternal(stack, s, x, y, color);
+    }
+
+    /**
+     * Internal method that does the actual text rendering (without shadow)
+     */
+    private void drawStringInternal(MatrixStack stack, String s, float x, float y, Color color) {
         float r = (float) color.getRed() / 255;
         float g = (float) color.getGreen() / 255;
         float b = (float) color.getBlue() / 255;
@@ -251,6 +295,13 @@ public class FontRenderer implements Closeable {
     }
 
     /**
+     * Draws a string without shadow (for cases where shadow is not wanted)
+     */
+    public void drawStringNoShadow(MatrixStack stack, String s, float x, float y, Color color) {
+        drawStringInternal(stack, s, x, y, color);
+    }
+
+    /**
      * Draws a string centered on the X coordinate
      *
      * @param stack The MatrixStack
@@ -261,6 +312,22 @@ public class FontRenderer implements Closeable {
      */
     public void drawCenteredString(MatrixStack stack, String s, float x, float y, Color color) {
         drawString(stack, s, x - getStringWidth(s) / 2f, y, color);
+    }
+
+    /**
+     * Draws a centered string with shadow
+     */
+    public void drawCenteredStringWithShadow(MatrixStack stack, String s, float x, float y, Color color) {
+        float width = getStringWidth(s);
+        drawStringWithShadow(stack, s, x - width / 2f, y, color);
+    }
+
+    /**
+     * Draws a centered string with custom shadow offset
+     */
+    public void drawCenteredStringWithShadow(MatrixStack stack, String s, float x, float y, Color color, float shadowOffset) {
+        float width = getStringWidth(s);
+        drawStringWithShadow(stack, s, x - width / 2f, y, color, shadowOffset);
     }
 
     /**
@@ -395,6 +462,5 @@ public class FontRenderer implements Closeable {
                     "b=" + b + ", " +
                     "toDraw=" + toDraw + ']';
         }
-
-        }
+    }
 }

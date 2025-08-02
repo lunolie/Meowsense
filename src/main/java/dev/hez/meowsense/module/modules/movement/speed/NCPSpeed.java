@@ -30,13 +30,13 @@ public class NCPSpeed extends SubMode<Speed> {
 
         if (getParentModule().ncpLowHop.getValue()) {
             if (PlayerUtil.inAirTicks() == 4) {
-                MoveUtils.setMotionY(-0.09800000190734864);
+                MoveUtils.setMotionY(-0.101);
             }
         }
 
         if (getParentModule().ncpTimerBoost.getValue()) {
             switch (PlayerUtil.inAirTicks()) {
-                case 0 -> PlayerUtil.setTimer(0.8f);
+                case 0 -> PlayerUtil.setTimer(1.0f);
                 case 1 -> PlayerUtil.setTimer(1.5f);
                 case 3 -> PlayerUtil.setTimer(1.008f);
             }
