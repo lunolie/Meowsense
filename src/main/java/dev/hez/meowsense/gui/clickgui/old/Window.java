@@ -1,8 +1,8 @@
-package dev.hez.meowsense.gui.clickgui.dropdown;
+package dev.hez.meowsense.gui.clickgui.old;
 
 import dev.hez.meowsense.Client;
-import dev.hez.meowsense.gui.clickgui.dropdown.components.ModuleButton;
-import dev.hez.meowsense.gui.clickgui.dropdown.components.settings.RenderableSetting;
+import dev.hez.meowsense.gui.clickgui.old.components.ModuleButton;
+import dev.hez.meowsense.gui.clickgui.old.components.settings.RenderableSetting;
 import dev.hez.meowsense.module.Module;
 import dev.hez.meowsense.module.ModuleCategory;
 import dev.hez.meowsense.utils.render.ThemeUtils;

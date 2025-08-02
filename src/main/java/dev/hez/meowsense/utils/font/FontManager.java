@@ -50,7 +50,8 @@ public class FontManager {
         VERDANA("verdana_pro_regular"),
         SFUI("sfui_display_regular"),
         Tenacity("tenacity-bold"),
-        Hack("hack-regular");
+        Hack("hack-regular"),
+        Tahoma("tahoma");
 
 
         private final String type;

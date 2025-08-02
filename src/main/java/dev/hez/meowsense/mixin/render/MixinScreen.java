@@ -1,5 +1,6 @@
 package dev.hez.meowsense.mixin.render;
 
+import dev.hez.meowsense.gui.clickgui.imgui.ClickGui;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -19,7 +20,7 @@ public class MixinScreen {
 
     @Inject(method = "renderBackground", at = @At("HEAD"), cancellable = true)
     private void renderBackgroundInject(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        if (this.client != null && (this.client.currentScreen instanceof dev.hez.meowsense.gui.clickgui.dropdown.ClickGui)) {
+        if (this.client != null && (this.client.currentScreen instanceof ClickGui || this.client.currentScreen instanceof dev.hez.meowsense.gui.clickgui.old.ClickGui)) {
             ci.cancel();
         }
     }

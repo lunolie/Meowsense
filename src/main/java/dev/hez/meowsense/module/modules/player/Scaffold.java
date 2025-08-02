@@ -26,25 +26,30 @@ import dev.hez.meowsense.utils.rotation.RotationUtils;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.Vector2f;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import java.util.UUID;
 
 import lombok.Getter;
+import net.minecraft.util.math.Vec3d;
 
 public class Scaffold extends Module {
     public static final ModeSetting rotMode = new ModeSetting("Rotation Mode", "Normal", "Normal", "Grim 1.17", "Back", "Sideways", "None", "Godbridge");
 
     public static final BooleanSetting sprint = new BooleanSetting("Sprint", false);
-    public static final ModeSetting sprintMode = new ModeSetting("Sprint Mode", "Normal", "Normal", "NoPacket", "Watchdog Slow");
+    public static final ModeSetting sprintMode = new ModeSetting("Sprint Mode", "Normal", "Normal", "NoPacket", "Watchdog Slow", "oNCP");
     public static final BooleanSetting keepY = new BooleanSetting("KeepY", false);
     public static final ModeSetting keepYMode = new ModeSetting("KeepY Mode", "Normal", "Normal", "Watchdog");
     public static final BooleanSetting keepYLowHop = new BooleanSetting("KeepY LowHop", false);
@@ -90,6 +95,7 @@ public class Scaffold extends Module {
         constantMotionJumpGroundValue.addDependency(tower, true);
 
         eagleEveryXBlocks.addDependency(eagle, true);
+
     }
 
     public BlockData blockData;
@@ -105,7 +111,7 @@ public class Scaffold extends Module {
     private boolean hypixelSprint;
 
     private boolean rotated = false;
-
+    private static final UUID SPEED_BOOST_ID = UUID.fromString("11111111-2222-3333-4444-555555555555");
     @Override
     public void onDisable() {
         if (eagle.getValue()) {
@@ -133,6 +139,10 @@ public class Scaffold extends Module {
                 case "NoPacket":
                     PacketUtils.sendPacketSilently(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.STOP_SPRINTING));
                     break;
+                case "oNCP":
+                    mc.player.setSprinting(true);
+                    break;
+
                 default:
                     mc.player.setSprinting(false);
             }
@@ -363,7 +373,7 @@ public class Scaffold extends Module {
            }
 
            if (rotMode.isMode("Sideways")) {
-               float yaw = mc.player.getYaw() + 45; // Adjust yaw to be closer to 45 degrees
+               float yaw = mc.player.getYaw() + 65; // Adjust yaw to be closer to 45 degrees
                float pitch = 90; // Set pitch to 90 for a sideways look
                rotations = new float[]{yaw, pitch};
            }
