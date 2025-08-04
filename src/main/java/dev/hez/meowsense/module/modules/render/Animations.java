@@ -6,7 +6,7 @@ import dev.hez.meowsense.module.setting.impl.ModeSetting;
 import dev.hez.meowsense.module.setting.impl.NumberSetting;
 
 public class Animations extends Module {
-    public static final ModeSetting mode = new ModeSetting("Mode", "1.7", "1.7", "Exhi", "Slide", "Smooth", "Spin", "Push");
+    public static final ModeSetting mode = new ModeSetting("Mode", "1.7", "1.7", "Exhibition", "Overhead", "Push", "Wiggle", "Stab", "Slash", "Helicopter", "Bounce", "Wave", "Flip", "Pulse", "Shake", "Windmill", "Figure8", "Classic", "Float","Zoom", "Jitter", "Glitch", "Swirl");
     public static final NumberSetting xOffset = new NumberSetting("X Offset", -5, 5, 0, 0.01);
     public static final NumberSetting yOffset = new NumberSetting("Y Offset", -5, 5, 0, 0.01);
     public static final NumberSetting itemScale = new NumberSetting("Item Scale", -5, 5, 0, 0.01);

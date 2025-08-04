@@ -158,9 +158,9 @@ public class FontRenderer implements Closeable {
      * @param color Texts color
      */
     public void drawString(MatrixStack stack, String s, float x, float y, Color color) {
-        // Draw shadow first - much more subtle
-        Color shadowColor = new Color(0, 0, 0, Math.max(32, color.getAlpha() / 4)); // Dark shadow with low opacity
-        drawStringInternal(stack, s, x + 1.0f, y + 1.0f, shadowColor);
+        // Draw shadow first - very subtle, close to text like Minecraft
+        Color shadowColor = new Color(0, 0, 0, Math.max(64, color.getAlpha() / 3)); // Slightly more visible but still subtle
+        drawStringInternal(stack, s, x + 0.5f, y + 0.5f, shadowColor);
 
         // Draw main text on top
         drawStringInternal(stack, s, x, y, color);
@@ -187,11 +187,11 @@ public class FontRenderer implements Closeable {
      * @param x            X coordinate to draw at
      * @param y            Y coordinate to draw at
      * @param color        Texts color
-     * @param shadowOffset Custom shadow offset (default is 1.0f)
+     * @param shadowOffset Custom shadow offset (default is 0.5f)
      */
     public void drawStringWithShadow(MatrixStack stack, String s, float x, float y, Color color, float shadowOffset) {
-        // Draw shadow first with custom offset - much more subtle
-        Color shadowColor = new Color(0, 0, 0, Math.max(32, color.getAlpha() / 4)); // Dark shadow with low opacity
+        // Draw shadow first with custom offset - subtle like Minecraft
+        Color shadowColor = new Color(0, 0, 0, Math.max(64, color.getAlpha() / 3)); // Slightly more visible but still subtle
         drawStringInternal(stack, s, x + shadowOffset, y + shadowOffset, shadowColor);
 
         // Draw main text on top

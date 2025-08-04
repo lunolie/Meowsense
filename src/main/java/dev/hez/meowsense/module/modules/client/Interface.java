@@ -10,6 +10,7 @@ import dev.hez.meowsense.module.setting.impl.BooleanSetting;
 import dev.hez.meowsense.module.setting.impl.ModeSetting;
 import dev.hez.meowsense.module.setting.impl.NumberSetting;
 import dev.hez.meowsense.module.setting.impl.StringSetting;
+import dev.hez.meowsense.module.modules.client.PostProcessing;
 import dev.hez.meowsense.utils.font.FontManager;
 import dev.hez.meowsense.utils.font.fonts.FontRenderer;
 import dev.hez.meowsense.utils.mc.ChatFormatting;
@@ -40,9 +41,10 @@ public class Interface extends Module {
     public static final ModeSetting suffixMode = new ModeSetting("Suffix", "Space", "Space", "-", ">", "[ ]");
     public static final BooleanSetting hideVisuals = new BooleanSetting("Hide visuals", true);
     public static final BooleanSetting lowercase = new BooleanSetting("Lowercase", false);
-    public static final ModeSetting backBarMode = new ModeSetting("Backbar Mode", "None", "None", "Full", "Rise");
+    public static final ModeSetting barMode = new ModeSetting("Bar Mode", "None", "None", "Full", "Rise", "Front");
     public static final NumberSetting padding = new NumberSetting("Offset", 0, 40, 5, 1);
     public static final NumberSetting opacity = new NumberSetting("BG Opacity", 0, 255, 80, 1);
+    public static final NumberSetting fontSize = new NumberSetting("Font Size", 7, 20, 10, 1);
     public static final BooleanSetting info = new BooleanSetting("Info", true);
     public static final BooleanSetting bpsCounter = new BooleanSetting("BPS", true);
     public static final BooleanSetting fpsCounter = new BooleanSetting("FPS", true);
@@ -56,7 +58,7 @@ public class Interface extends Module {
 
     public Interface() {
         super("Interface", "Clients HUD", 0, ModuleCategory.CLIENT);
-        addSettings(watermark, watermarkMode, watermarkText, watermarkSimpleFontMode, arrayList, colorMode, fontMode, suffixMode, hideVisuals, lowercase, backBarMode, padding, opacity, info, bpsCounter, fpsCounter);
+        addSettings(watermark, watermarkMode, watermarkText, watermarkSimpleFontMode, arrayList, colorMode, fontMode, suffixMode, hideVisuals, lowercase, barMode, padding, opacity, fontSize, info, bpsCounter, fpsCounter);
         watermarkMode.addDependency(watermark, true);
         watermarkText.addDependency(watermark, true);
         watermarkSimpleFontMode.addDependency(watermarkMode, "Simple");
@@ -65,9 +67,10 @@ public class Interface extends Module {
         suffixMode.addDependency(arrayList, true);
         hideVisuals.addDependency(arrayList, true);
         lowercase.addDependency(arrayList, true);
-        backBarMode.addDependency(arrayList, true);
+        barMode.addDependency(arrayList, true);
         padding.addDependency(arrayList, true);
         opacity.addDependency(arrayList, true);
+        fontSize.addDependency(arrayList, true);
         bpsCounter.addDependency(info, true);
         fpsCounter.addDependency(info, true);
 
@@ -148,84 +151,177 @@ public class Interface extends Module {
                     break;
             }
 
-            int i = this.padding.getValueInt();
-            int totalWidth = event.getWidth();
+            // Filter out visual modules if hideVisuals is enabled
+            List<Module> filteredModules = enabledModules.stream()
+                    .filter(m -> !(hideVisuals.getValue() && m.getModuleCategory() == ModuleCategory.RENDER))
+                    .collect(Collectors.toList());
 
-            for (Module m : enabledModules) {
-                if (hideVisuals.getValue() && m.getModuleCategory() == ModuleCategory.RENDER) continue;
+            if (!filteredModules.isEmpty()) {
+                int i = this.padding.getValueInt();
+                int totalWidth = event.getWidth();
 
-                int color = switch (colorMode.getMode()) {
-                    case "Astolfo" -> getAstolfo(i * 3);
-                    case "Theme" -> getThemeColor(i).getRGB();
-                    default -> 0;
-                };
+                // First pass: PostProcessing blur effects
+                for (Module m : filteredModules) {
+                    int moduleWidth;
+                    int moduleHeight;
 
-                int moduleWidth;
-                int moduleHeight;
+                    switch (fontMode.getMode()) {
+                        case "MC":
+                            moduleWidth = mc.textRenderer.getWidth(getFullName(m));
+                            moduleHeight = mc.textRenderer.fontHeight;
+                            break;
+                        default:
+                            moduleWidth = (int) getCustomFontRenderer(fontMode.getMode()).getStringWidth(getFullName(m));
+                            moduleHeight = (int) getCustomFontRenderer(fontMode.getMode()).getStringHeight(getFullName(m));
+                            break;
+                    }
 
-                switch (fontMode.getMode()) {
-                    case "MC":
-                        moduleWidth = mc.textRenderer.getWidth(getFullName(m));
-                        moduleHeight = mc.textRenderer.fontHeight;
-                        break;
-                    default:
-                        moduleWidth = (int) getCustomFontRenderer(fontMode.getMode()).getStringWidth(getFullName(m));
-                        moduleHeight = (int) getCustomFontRenderer(fontMode.getMode()).getStringHeight(getFullName(m));
-                        break;
+                    int color = switch (colorMode.getMode()) {
+                        case "Astolfo" -> getAstolfo(i * 3);
+                        case "Theme" -> getThemeColor(i).getRGB();
+                        default -> 0;
+                    };
+
+                    if (PostProcessing.shouldBlurArrayList()) {
+                        ShaderUtils.drawGlow(event.getContext().getMatrices(), totalWidth - moduleWidth - this.padding.getValueInt() - 2, i - 2, totalWidth - this.padding.getValueInt() + 2 - (totalWidth - moduleWidth - this.padding.getValueInt() - 2), i + moduleHeight + 1 - (i - 1), 30, new Color(color));
+                    }
+
+                    i += moduleHeight + 3;
                 }
 
-                if (PostProcessing.shouldBlurArrayList()) {
-                    ShaderUtils.drawGlow(event.getContext().getMatrices(), totalWidth - moduleWidth - this.padding.getValueInt() - 2, i - 2, totalWidth - this.padding.getValueInt() + 2 - (totalWidth - moduleWidth - this.padding.getValueInt() - 2), i + moduleHeight + 1 - (i - 1), 30, new Color(color));
+                // Calculate front bar dimensions for the entire arraylist
+                if (barMode.getMode().equals("Front")) {
+                    int startY = this.padding.getValueInt();
+                    List<Integer> moduleWidths = new ArrayList<>();
+                    List<Integer> moduleHeights = new ArrayList<>();
+
+                    // Collect all module dimensions
+                    for (Module m : filteredModules) {
+                        int moduleWidth;
+                        int moduleHeight;
+
+                        switch (fontMode.getMode()) {
+                            case "MC":
+                                moduleWidth = mc.textRenderer.getWidth(getFullName(m));
+                                moduleHeight = mc.textRenderer.fontHeight;
+                                break;
+                            default:
+                                moduleWidth = (int) getCustomFontRenderer(fontMode.getMode()).getStringWidth(getFullName(m));
+                                moduleHeight = (int) getCustomFontRenderer(fontMode.getMode()).getStringHeight(getFullName(m));
+                                break;
+                        }
+
+                        moduleWidths.add(moduleWidth);
+                        moduleHeights.add(moduleHeight);
+                    }
+
+                    // Draw the front bar outline
+                    int currentY = startY;
+                    for (int j = 0; j < filteredModules.size(); j++) {
+                        int moduleWidth = moduleWidths.get(j);
+                        int moduleHeight = moduleHeights.get(j);
+
+                        int frontBarColor = switch (colorMode.getMode()) {
+                            case "Astolfo" -> getAstolfo(currentY * 3);
+                            case "Theme" -> getThemeColor(currentY / 10).getRGB();
+                            default -> Color.WHITE.getRGB();
+                        };
+
+                        // Left vertical line for this module (thinner - 1 pixel wide)
+                        event.getContext().fill(totalWidth - moduleWidth - this.padding.getValueInt() - 3,
+                                currentY - 1,
+                                totalWidth - moduleWidth - this.padding.getValueInt() - 2,
+                                currentY + moduleHeight + 1,
+                                frontBarColor);
+
+                        // Top horizontal line (thinner - 1 pixel wide)
+                        if (j == 0) {
+                            event.getContext().fill(totalWidth - moduleWidth - this.padding.getValueInt() - 3,
+                                    currentY - 1,
+                                    totalWidth - this.padding.getValueInt() + 2,
+                                    currentY,
+                                    frontBarColor);
+                        }
+
+                        // Horizontal line connecting to the next module if width changes (thinner)
+                        if (j < filteredModules.size() - 1) {
+                            int nextModuleWidth = moduleWidths.get(j + 1);
+                            int nextY = currentY + moduleHeight + 3;
+
+                            if (moduleWidth != nextModuleWidth) {
+                                int leftX = Math.min(totalWidth - moduleWidth - this.padding.getValueInt() - 2,
+                                        totalWidth - nextModuleWidth - this.padding.getValueInt() - 2);
+                                int rightX = Math.max(totalWidth - moduleWidth - this.padding.getValueInt() - 2,
+                                        totalWidth - nextModuleWidth - this.padding.getValueInt() - 2);
+
+                                event.getContext().fill(leftX,
+                                        nextY - 2,
+                                        rightX,
+                                        nextY - 1,
+                                        frontBarColor);
+                            }
+                        }
+
+                        // Bottom horizontal line for the last module (thinner - 1 pixel wide)
+                        if (j == filteredModules.size() - 1) {
+                            event.getContext().fill(totalWidth - moduleWidth - this.padding.getValueInt() - 3,
+                                    currentY + moduleHeight + 1,
+                                    totalWidth - this.padding.getValueInt() + 2,
+                                    currentY + moduleHeight + 2,
+                                    frontBarColor);
+                        }
+
+                        currentY += moduleHeight + 3;
+                    }
                 }
 
-                i += moduleHeight + 3;
-            }
+                // Second pass: backgrounds and module text
+                i = this.padding.getValueInt();
+                for (Module m : filteredModules) {
+                    int color = switch (colorMode.getMode()) {
+                        case "Astolfo" -> getAstolfo(i * 3);
+                        case "Theme" -> getThemeColor(i).getRGB();
+                        default -> 0;
+                    };
 
-            i = this.padding.getValueInt();
+                    int moduleWidth;
+                    int moduleHeight;
 
-            for (Module m : enabledModules) {
-                if (hideVisuals.getValue() && m.getModuleCategory() == ModuleCategory.RENDER) continue;
+                    switch (fontMode.getMode()) {
+                        case "MC":
+                            moduleWidth = mc.textRenderer.getWidth(getFullName(m));
+                            moduleHeight = mc.textRenderer.fontHeight;
+                            break;
+                        default:
+                            moduleWidth = (int) getCustomFontRenderer(fontMode.getMode()).getStringWidth(getFullName(m));
+                            moduleHeight = (int) getCustomFontRenderer(fontMode.getMode()).getStringHeight(getFullName(m));
+                            break;
+                    }
 
-                int color = switch (colorMode.getMode()) {
-                    case "Astolfo" -> getAstolfo(i * 3);
-                    case "Theme" -> getThemeColor(i).getRGB();
-                    default -> 0;
-                };
+                    // Draw background
+                    event.getContext().fill(totalWidth - moduleWidth - this.padding.getValueInt() - 2, i - 2, totalWidth - this.padding.getValueInt() + 2, i + moduleHeight + 1, new Color(0, 0, 0, this.opacity.getValueInt()).getRGB());
 
-                int moduleWidth;
-                int moduleHeight;
+                    // Draw other bar modes (not Front since it's already drawn)
+                    switch (barMode.getMode()) {
+                        case "Full":
+                            event.getContext().fill(totalWidth - this.padding.getValueInt() + 3, i - 2, totalWidth - this.padding.getValueInt() + 5, i + moduleHeight + 1, color);
+                            break;
+                        case "Rise":
+                            event.getContext().fill(totalWidth - this.padding.getValueInt() + 3, i - 1, totalWidth - this.padding.getValueInt() + 5, i + moduleHeight, color);
+                            break;
+                    }
 
-                switch (fontMode.getMode()) {
-                    case "MC":
-                        moduleWidth = mc.textRenderer.getWidth(getFullName(m));
-                        moduleHeight = mc.textRenderer.fontHeight;
-                        break;
-                    default:
-                        moduleWidth = (int) getCustomFontRenderer(fontMode.getMode()).getStringWidth(getFullName(m));
-                        moduleHeight = (int) getCustomFontRenderer(fontMode.getMode()).getStringHeight(getFullName(m));
-                        break;
+                    // Draw module text
+                    switch (fontMode.getMode()) {
+                        case "MC":
+                            event.getContext().drawText(mc.textRenderer, getFullName(m), totalWidth - moduleWidth - this.padding.getValueInt(), i, color, true);
+                            break;
+                        default:
+                            getCustomFontRenderer(fontMode.getMode()).drawString(event.getContext().getMatrices(), getFullName(m), totalWidth - moduleWidth - this.padding.getValueInt(), i, new Color(color));
+                            break;
+                    }
+                    i += moduleHeight + 3;
                 }
-
-                event.getContext().fill(totalWidth - moduleWidth - this.padding.getValueInt() - 2, i - 2, totalWidth - this.padding.getValueInt() + 2, i + moduleHeight + 1, new Color(0, 0, 0, this.opacity.getValueInt()).getRGB());
-
-                switch (backBarMode.getMode()) {
-                    case "Full":
-                        event.getContext().fill(totalWidth - this.padding.getValueInt() + 3, i - 2, totalWidth - this.padding.getValueInt() + 5, i + moduleHeight + 1, color);
-                        break;
-                    case "Rise":
-                        event.getContext().fill(totalWidth - this.padding.getValueInt() + 3, i - 1, totalWidth - this.padding.getValueInt() + 5, i + moduleHeight, color);
-                        break;
-                }
-
-                switch (fontMode.getMode()) {
-                    case "MC":
-                        event.getContext().drawText(mc.textRenderer, getFullName(m), totalWidth - moduleWidth - this.padding.getValueInt(), i, color, true);
-                        break;
-                    default:
-                        getCustomFontRenderer(fontMode.getMode()).drawString(event.getContext().getMatrices(), getFullName(m), totalWidth - moduleWidth - this.padding.getValueInt(), i, new Color(color));
-                        break;
-                }
-                i += moduleHeight + 3;
             }
         }
 
@@ -259,14 +355,14 @@ public class Interface extends Module {
 
     private FontRenderer getCustomFontRenderer(String name) {
         return switch (name) {
-            case "Product Sans Regular" -> Client.INSTANCE.getFontManager().getSize(10, FontManager.Type.PRODUCT_SANS_REGULAR);
-            case "Product Sans Medium" -> Client.INSTANCE.getFontManager().getSize(10, FontManager.Type.PRODUCT_SANS_MEDIUM);
-            case "Product Sans Bold" -> Client.INSTANCE.getFontManager().getSize(10, FontManager.Type.PRODUCT_SANS_BOLD);
-            case "SFUI" -> Client.INSTANCE.getFontManager().getSize(10, FontManager.Type.SFUI);
-            case "Verdana" -> Client.INSTANCE.getFontManager().getSize(10, FontManager.Type.VERDANA);
+            case "Product Sans Regular" -> Client.INSTANCE.getFontManager().getSize(fontSize.getValueInt(), FontManager.Type.PRODUCT_SANS_REGULAR);
+            case "Product Sans Medium" -> Client.INSTANCE.getFontManager().getSize(fontSize.getValueInt(), FontManager.Type.PRODUCT_SANS_MEDIUM);
+            case "Product Sans Bold" -> Client.INSTANCE.getFontManager().getSize(fontSize.getValueInt(), FontManager.Type.PRODUCT_SANS_BOLD);
+            case "SFUI" -> Client.INSTANCE.getFontManager().getSize(fontSize.getValueInt(), FontManager.Type.SFUI);
+            case "Verdana" -> Client.INSTANCE.getFontManager().getSize(fontSize.getValueInt(), FontManager.Type.VERDANA);
             case "Tenacity" -> Client.INSTANCE.getFontManager().getSize(9, FontManager.Type.Tenacity);
             case "Hack" -> Client.INSTANCE.getFontManager().getSize(9, FontManager.Type.Hack);
-            case "Tahoma" -> Client.INSTANCE.getFontManager().getSize(10, FontManager.Type.Tahoma);
+            case "Tahoma" -> Client.INSTANCE.getFontManager().getSize(9, FontManager.Type.Tahoma);
             default -> null;
         };
     }
