@@ -33,7 +33,7 @@ public class Speed extends Module {
             new PolarCollideSpeed("Polar Collide", this),
             new Balancespeed("Balance Timer", this),
             new CubecraftSpeed("Cubecraft", this),
-            new MushMCSpeed("MushMC", this),
+            new MushMCSpeed("MushMC", this)
     );
 
     // vanilla
