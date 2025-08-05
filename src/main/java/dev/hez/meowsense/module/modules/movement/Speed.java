@@ -34,7 +34,6 @@ public class Speed extends Module {
             new Balancespeed("Balance Timer", this),
             new CubecraftSpeed("Cubecraft", this),
             new MushMCSpeed("MushMC", this),
-            new HypixelHvHSpeed ("Hypixel HvH", this)
     );
 
     // vanilla
@@ -75,7 +74,7 @@ public class Speed extends Module {
 
     public Speed() {
         super("Speed", "Makes you speedy", 0, ModuleCategory.MOVEMENT);
-        this.addSettings(speedMode, vanillaSpeed, watchdogLowHop, watchdogStrafe, watchdogShouldCancelVelocity, watchdogNeedDisabler, ncpHurtBoost, ncpHurtBoostHurttime, ncpHurtBoostSpeed, ncpLowHop, ncpGlide, ncpTimerBoost, vulcanGroundSpeed, hvhHurtBoost, hvhHurtBoostHurttime, hvhHurtBoostSpeed, hvhLowHop, hvhGlide, hvhTimerBoost); // cubecraftHurtBoost, cubecraftHurtBoostHurttime, cubecraftHurtBoostSpeed, cubecraftLowHop, cubecraftGlide, cubecraftTimerBoost
+        this.addSettings(speedMode, vanillaSpeed, watchdogLowHop, watchdogStrafe, watchdogShouldCancelVelocity, watchdogNeedDisabler, ncpHurtBoost, ncpHurtBoostHurttime, ncpHurtBoostSpeed, ncpLowHop, ncpGlide, ncpTimerBoost, vulcanGroundSpeed); // cubecraftHurtBoost, cubecraftHurtBoostHurttime, cubecraftHurtBoostSpeed, cubecraftLowHop, cubecraftGlide, cubecraftTimerBoost
 
         vanillaSpeed.addDependency(speedMode, "Vanilla");
         vulcanGroundSpeed.addDependency(speedMode, "Vulcan");
@@ -95,15 +94,6 @@ public class Speed extends Module {
         ncpLowHop.addDependency(speedMode, "NCP");
         ncpGlide.addDependency(speedMode, "NCP");
         ncpTimerBoost.addDependency(speedMode, "NCP");
-
-        hvhHurtBoost.addDependency(speedMode, "HypixelHvHSpeed");
-        hvhHurtBoostHurttime.addDependency(speedMode, "HypixelHvHSpeed");
-        hvhHurtBoostHurttime.addDependency(hvhHurtBoost, true);
-        hvhHurtBoostSpeed.addDependency(speedMode, "HypixelHvHSpeed");
-        hvhHurtBoostSpeed.addDependency(hvhHurtBoost, true);
-        hvhLowHop.addDependency(speedMode, "HypixelHvHSpeed");
-        hvhGlide.addDependency(speedMode, "HypixelHvHSpeed");
-        hvhTimerBoost.addDependency(speedMode, "HypixelHvHSpeed");
     }
         // cubecraftHurtBoost.addDependency(speedMode, "Cubecraft");
         // cubecraftHurtBoostHurttime.addDependency(speedMode, "Cubecraft");
