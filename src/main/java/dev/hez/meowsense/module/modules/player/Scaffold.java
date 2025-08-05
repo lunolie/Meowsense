@@ -373,7 +373,7 @@ public class Scaffold extends Module {
            }
 
            if (rotMode.isMode("Sideways")) {
-               float yaw = mc.player.getYaw() + 65; // Adjust yaw to be closer to 45 degrees
+               float yaw = mc.player.getYaw() + 85; // Adjust yaw to be closer to 45 degrees
                float pitch = 90; // Set pitch to 90 for a sideways look
                rotations = new float[]{yaw, pitch};
            }

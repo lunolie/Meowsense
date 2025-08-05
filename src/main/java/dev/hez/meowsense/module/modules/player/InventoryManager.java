@@ -15,12 +15,15 @@ import dev.hez.meowsense.utils.timer.MillisTimer;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.FoodComponent;
+import net.minecraft.component.type.PotionContentsComponent;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.*;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class InventoryManager extends Module {
     public static final NumberSetting startDelayValue = new NumberSetting("Start Delay", 0, 1000, 100, 10);
@@ -43,10 +46,35 @@ public class InventoryManager extends Module {
     public static final NumberSetting enderPearlSlot = new NumberSetting("Ender Pearl Slot", 1, 9, 8, 1);
     public static final BooleanSetting throwFood = new BooleanSetting("Throw Food", false);
     public static final NumberSetting foodSlot = new NumberSetting("Food Slot", 1, 9, 6, 1);
+    
+    // Potion settings
+    public static final BooleanSetting throwPotions = new BooleanSetting("Throw Potions", false);
+    public static final NumberSetting potionSlot = new NumberSetting("Potion Slot", 1, 9, 7, 1);
+    public static final BooleanSetting separateBuffDebuff = new BooleanSetting("Separate Buff/Debuff", false);
+    public static final BooleanSetting throwDebuffPotions = new BooleanSetting("Throw Debuff Potions", true);
+    public static final NumberSetting buffPotionSlot = new NumberSetting("Buff Potion Slot", 1, 9, 7, 1);
+    public static final NumberSetting debuffPotionSlot = new NumberSetting("Debuff Potion Slot", 1, 9, 8, 1);
+
+    // Define beneficial and harmful effect names for simple string matching
+    private static final Set<String> BENEFICIAL_EFFECT_NAMES = Set.of(
+        "speed", "haste", "strength", "instant_health", "healing",
+        "jump_boost", "regeneration", "resistance", "fire_resistance",
+        "water_breathing", "invisibility", "night_vision", "health_boost",
+        "absorption", "saturation", "luck", "slow_falling",
+        "conduit_power", "dolphins_grace", "hero_of_the_village"
+    );
+
+    private static final Set<String> HARMFUL_EFFECT_NAMES = Set.of(
+        "slowness", "mining_fatigue", "instant_damage", "harming", "nausea",
+        "blindness", "hunger", "weakness", "poison",
+        "wither", "levitation", "unluck", "darkness",
+        "bad_omen", "raid_omen", "trial_omen", "infested",
+        "oozing", "weaving", "wind_charged"
+    );
 
     public InventoryManager() {
         super("InventoryManager", "Sorts your inventory", 0, ModuleCategory.PLAYER);
-        this.addSettings(startDelayValue, takeDelayValue, throwSword, swordSlot, throwBlock, blockSlot, throwTools, pickSlot, axeSlot, shovelSlot, hoeSlot, throwBow, bowSlot, throwFishingRod, fishingRodSlot, throwEnderPearl, enderPearlSlot, throwFood, foodSlot);
+        this.addSettings(startDelayValue, takeDelayValue, throwSword, swordSlot, throwBlock, blockSlot, throwTools, pickSlot, axeSlot, shovelSlot, hoeSlot, throwBow, bowSlot, throwFishingRod, fishingRodSlot, throwEnderPearl, enderPearlSlot, throwFood, foodSlot, throwPotions, potionSlot, separateBuffDebuff, throwDebuffPotions, buffPotionSlot, debuffPotionSlot);
 
         fishingRodSlot.addDependency(throwFishingRod, false);
         enderPearlSlot.addDependency(throwEnderPearl, false);
@@ -57,6 +85,13 @@ public class InventoryManager extends Module {
         axeSlot.addDependency(throwTools, false);
         hoeSlot.addDependency(throwTools, false);
         bowSlot.addDependency(throwBow, false);
+        potionSlot.addDependency(throwPotions, false);
+        potionSlot.addDependency(separateBuffDebuff, false);
+        separateBuffDebuff.addDependency(throwPotions, false);
+        throwDebuffPotions.addDependency(separateBuffDebuff, true);
+        buffPotionSlot.addDependency(separateBuffDebuff, true);
+        debuffPotionSlot.addDependency(separateBuffDebuff, true);
+        debuffPotionSlot.addDependency(throwDebuffPotions, false);
     }
 
     private final MillisTimer startDelay = new MillisTimer();
@@ -85,6 +120,9 @@ public class InventoryManager extends Module {
             Slot bestEnderPearlSlot = null;
             Slot bestFishingRodSlot = null;
             Slot bestFoodSlot = null;
+            Slot bestPotionSlot = null;
+            Slot bestBuffPotionSlot = null;
+            Slot bestDebuffPotionSlot = null;
 
             for (Slot slot : itemSlots) {
                 Item item = slot.getStack().getItem();
@@ -153,6 +191,33 @@ public class InventoryManager extends Module {
                         bestFishingRodSlot = slot;
                     } else {
                         unnecessarySlots.add(slot);
+                    }
+                } else if (item instanceof PotionItem || item instanceof SplashPotionItem || item instanceof LingeringPotionItem) {
+                    if (separateBuffDebuff.getValue()) {
+                        boolean isBeneficial = isPotionBeneficial(slot);
+                        
+                        if (isBeneficial) {
+                            if (bestBuffPotionSlot == null || slot.getStack().getCount() > bestBuffPotionSlot.getStack().getCount()) {
+                                unnecessarySlots.add(bestBuffPotionSlot);
+                                bestBuffPotionSlot = slot;
+                            } else {
+                                unnecessarySlots.add(slot);
+                            }
+                        } else {
+                            if (bestDebuffPotionSlot == null || slot.getStack().getCount() > bestDebuffPotionSlot.getStack().getCount()) {
+                                unnecessarySlots.add(bestDebuffPotionSlot);
+                                bestDebuffPotionSlot = slot;
+                            } else {
+                                unnecessarySlots.add(slot);
+                            }
+                        }
+                    } else {
+                        if (bestPotionSlot == null || slot.getStack().getCount() > bestPotionSlot.getStack().getCount()) {
+                            unnecessarySlots.add(bestPotionSlot);
+                            bestPotionSlot = slot;
+                        } else {
+                            unnecessarySlots.add(slot);
+                        }
                     }
                 } else if (item.getComponents().contains(DataComponentTypes.FOOD)) {
                     FoodComponent foodComponent = item.getComponents().get(DataComponentTypes.FOOD);
@@ -290,11 +355,106 @@ public class InventoryManager extends Module {
                     click(bestFoodSlot, 1, SlotActionType.THROW);
                 }
             }
+
+            // Handle potions based on settings
+            if (separateBuffDebuff.getValue()) {
+                // Handle buff potions
+                if (bestBuffPotionSlot != null && isPotionItem(bestBuffPotionSlot.getStack().getItem())) {
+                    if (bestBuffPotionSlot.id != 36) {
+                        click(bestBuffPotionSlot, buffPotionSlot.getValueInt() - 1, SlotActionType.SWAP);
+                    }
+                }
+
+                // Handle debuff potions
+                if (!throwDebuffPotions.getValue()) {
+                    if (bestDebuffPotionSlot != null && isPotionItem(bestDebuffPotionSlot.getStack().getItem())) {
+                        if (bestDebuffPotionSlot.id != 36) {
+                            click(bestDebuffPotionSlot, debuffPotionSlot.getValueInt() - 1, SlotActionType.SWAP);
+                        }
+                    }
+                } else {
+                    if (bestDebuffPotionSlot != null && isPotionItem(bestDebuffPotionSlot.getStack().getItem())) {
+                        click(bestDebuffPotionSlot, 1, SlotActionType.THROW);
+                    }
+                }
+            } else {
+                // Handle all potions together
+                if (!throwPotions.getValue()) {
+                    if (bestPotionSlot != null && isPotionItem(bestPotionSlot.getStack().getItem())) {
+                        if (bestPotionSlot.id != 36) {
+                            click(bestPotionSlot, potionSlot.getValueInt() - 1, SlotActionType.SWAP);
+                        }
+                    }
+                } else {
+                    if (bestPotionSlot != null && isPotionItem(bestPotionSlot.getStack().getItem())) {
+                        click(bestPotionSlot, 1, SlotActionType.THROW);
+                    }
+                }
+            }
         } else {
             takeDelay.reset();
             startDelay.reset();
         }
     };
+
+    private boolean isPotionItem(Item item) {
+        return item instanceof PotionItem || item instanceof SplashPotionItem || item instanceof LingeringPotionItem;
+    }
+
+    private boolean isPotionBeneficial(Slot slot) {
+        ItemStack stack = slot.getStack();
+        PotionContentsComponent potionContents = stack.getComponents().get(DataComponentTypes.POTION_CONTENTS);
+        
+        if (potionContents == null) {
+            return false;
+        }
+
+        // Check custom effects first
+        for (var effect : potionContents.customEffects()) {
+            String effectName = effect.getEffectType().value().getTranslationKey().toLowerCase();
+            if (containsAnyBeneficialKeyword(effectName)) {
+                return true;
+            }
+            if (containsAnyHarmfulKeyword(effectName)) {
+                return false;
+            }
+        }
+
+        // Check potion type effects
+        if (potionContents.potion().isPresent()) {
+            var potion = potionContents.potion().get();
+            for (var effect : potion.value().getEffects()) {
+                String effectName = effect.getEffectType().value().getTranslationKey().toLowerCase();
+                if (containsAnyBeneficialKeyword(effectName)) {
+                    return true;
+                }
+                if (containsAnyHarmfulKeyword(effectName)) {
+                    return false;
+                }
+            }
+        }
+
+        // Default to beneficial if unknown
+        return true;
+    }
+
+    private boolean containsAnyBeneficialKeyword(String effectName) {
+        for (String keyword : BENEFICIAL_EFFECT_NAMES) {
+            if (effectName.contains(keyword)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean containsAnyHarmfulKeyword(String effectName) {
+        for (String keyword : HARMFUL_EFFECT_NAMES) {
+            if (effectName.contains(keyword)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private boolean isArmorEquipped(int index, Slot slot) {
         List<ItemStack> armorItems = new ArrayList<>();

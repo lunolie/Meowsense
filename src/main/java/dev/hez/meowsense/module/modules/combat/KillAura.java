@@ -55,8 +55,8 @@ public class KillAura extends Module {
     public static final ModeSetting rotMode = new ModeSetting("Rot Mode", "Normal", "Normal", "Grim 1.17", "None");
 
     public static final MultiModeSetting randomMode = new MultiModeSetting("Random Mode", "Basic", "Noise", "Time", "Jitter");
-    public static final RangeSetting randomizationYawValue = new RangeSetting("Yaw Randomization Value", -20, 20, 3, 5, 1);
-    public static final RangeSetting randomizationPitchValue = new RangeSetting("Pitch Randomization Value", -20, 20, 3, 5, 1);
+    public static final RangeSetting randomizationYawValue = new RangeSetting("Yaw Random Value", -20, 20, 3, 5, 1);
+    public static final RangeSetting randomizationPitchValue = new RangeSetting("Pitch Random Value", -20, 20, 3, 5, 1);
 
     public static final MultiModeSetting angleSmoothMode = new MultiModeSetting("Smooth Mode", "FovBased", "Bezier", "Exp", "Noise", "MousePad");
     public static final RangeSetting noiseSmoothValue = new RangeSetting("Noise Smooth", 0.1, 1, 0.4, 0.6, 0.1);
