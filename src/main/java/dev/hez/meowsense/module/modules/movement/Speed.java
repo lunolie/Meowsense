@@ -64,13 +64,6 @@ public class Speed extends Module {
     public final BooleanSetting watchdogShouldCancelVelocity = new BooleanSetting("Cancel Velocity", false);
     public final BooleanSetting watchdogNeedDisabler = new BooleanSetting("Need Disabler", true);
 
-    // HypixelHvH
-    public final BooleanSetting hvhHurtBoost = new BooleanSetting("HurtBoost", false);
-    public final NumberSetting hvhHurtBoostHurttime = new NumberSetting("HurtTime", 1, 10, 7, 1);
-    public final NumberSetting hvhHurtBoostSpeed = new NumberSetting("Hurt Speed", 0.5, 2, 0.75, 0.001);
-    public final BooleanSetting hvhLowHop = new BooleanSetting("Lowhop", false);
-    public final BooleanSetting hvhGlide = new BooleanSetting("Glide", false);
-    public final BooleanSetting hvhTimerBoost = new BooleanSetting("Timer Boost", false);
 
     public Speed() {
         super("Speed", "Makes you speedy", 0, ModuleCategory.MOVEMENT);
