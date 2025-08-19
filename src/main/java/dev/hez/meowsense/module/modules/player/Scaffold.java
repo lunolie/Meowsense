@@ -7,6 +7,7 @@ import dev.hez.meowsense.event.impl.input.EventMovementInput;
 import dev.hez.meowsense.event.impl.network.EventPacket;
 import dev.hez.meowsense.event.impl.player.EventSilentRotation;
 import dev.hez.meowsense.event.impl.player.EventTickPre;
+import dev.hez.meowsense.event.impl.render.EventRender2D;
 import dev.hez.meowsense.event.types.TransferOrder;
 import dev.hez.meowsense.mixin.accesors.KeyBindingAccessor;
 import dev.hez.meowsense.module.Module;
@@ -68,16 +69,18 @@ public class Scaffold extends Module {
 
     public static final BooleanSetting extraCps = new BooleanSetting("Extra CPS", false);
     public static final BooleanSetting telly = new BooleanSetting("Telly", false);
+    public static final BooleanSetting modernWatchdog = new BooleanSetting("ModernWatchdog", false);
     public static final BooleanSetting andromeda = new BooleanSetting("Andromeda", false);
     public static final BooleanSetting eagle = new BooleanSetting("Eagle", false);
     public static final NumberSetting eagleEveryXBlocks = new NumberSetting("Sneak every X blocks", 1, 10, 1, 1);
     public static final BooleanSetting raycat = new BooleanSetting("Raycast", false);
     public static final BooleanSetting strictRaycast = new BooleanSetting("Strict Raycast", false);
     public static final BooleanSetting supastrictraycast = new BooleanSetting("Supa Strict Raycast", false);
+    public static final BooleanSetting blockCounter = new BooleanSetting("Block Counter", true);
 
     public Scaffold() {
         super("Scaffold", "Bridges for you", 0, ModuleCategory.PLAYER);
-        this.addSettings(rotMode, sprint, sprintMode, keepY, keepYMode, keepYLowHop, tower, towerMode, towerSprint, constantMotionValue, constantMotionJumpGroundValue, extraCps, telly, andromeda, eagle, eagleEveryXBlocks, raycat, strictRaycast, supastrictraycast);
+        this.addSettings(rotMode, sprint, sprintMode, keepY, keepYMode, keepYLowHop, tower, towerMode, towerSprint, constantMotionValue, constantMotionJumpGroundValue, extraCps, telly, modernWatchdog, andromeda, eagle, eagleEveryXBlocks, raycat, strictRaycast, supastrictraycast, blockCounter);
         sprintMode.addDependency(sprint, true);
         keepYMode.addDependency(keepY, true);
         keepYLowHop.addDependency(keepY, true);
@@ -95,6 +98,7 @@ public class Scaffold extends Module {
         constantMotionJumpGroundValue.addDependency(tower, true);
 
         eagleEveryXBlocks.addDependency(eagle, true);
+        modernWatchdog.addDependency(telly, true);
 
     }
 
@@ -112,6 +116,7 @@ public class Scaffold extends Module {
 
     private boolean rotated = false;
     private static final UUID SPEED_BOOST_ID = UUID.fromString("11111111-2222-3333-4444-555555555555");
+    
     @Override
     public void onDisable() {
         if (eagle.getValue()) {
@@ -154,6 +159,69 @@ public class Scaffold extends Module {
         rotated = false;
         changeBlockSlot();
         super.onEnable();
+    }
+
+    @EventLink
+    public final Listener<EventRender2D> eventRender2DListener = event -> {
+        if (isNull() || !blockCounter.getValue()) {
+            return;
+        }
+
+        // Get block count from inventory
+        int blockCount = getBlockCount();
+        
+        if (blockCount <= 0) {
+            return;
+        }
+
+        String counterText = String.valueOf(blockCount);
+        
+        // Get screen dimensions
+        int screenWidth = event.getWidth();
+        int screenHeight = event.getHeight();
+        
+        // Calculate center position under crosshair
+        int centerX = screenWidth / 2;
+        int centerY = screenHeight / 2;
+        
+        // Position the counter under the crosshair
+        int textWidth = mc.textRenderer.getWidth(counterText);
+        int textX = centerX - textWidth / 2;
+        int textY = centerY + 20; // 20 pixels below crosshair
+        
+        // Render background
+        event.getContext().fill(textX - 4, textY - 2, textX + textWidth + 4, textY + mc.textRenderer.fontHeight + 2, 0x80000000);
+        
+        // Render text with color based on block count
+        int color = getBlockCountColor(blockCount);
+        event.getContext().drawTextWithShadow(mc.textRenderer, counterText, textX, textY, color);
+    };
+
+    private int getBlockCount() {
+        if (mc.player == null) {
+            return 0;
+        }
+        
+        int count = 0;
+        for (int i = 0; i < 36; i++) {
+            ItemStack stack = mc.player.getInventory().getStack(i);
+            if (!stack.isEmpty() && stack.getItem() instanceof BlockItem && InventoryUtils.isBlockPlaceable(stack)) {
+                count += stack.getCount();
+            }
+        }
+        return count;
+    }
+
+    private int getBlockCountColor(int count) {
+        if (count > 128) {
+            return 0xFF55FF55; // Green
+        } else if (count > 64) {
+            return 0xFFFFFF55; // Yellow
+        } else if (count > 32) {
+            return 0xFFFF8855; // Orange
+        } else {
+            return 0xFFFF5555; // Red
+        }
     }
 
     @EventLink
@@ -285,7 +353,7 @@ public class Scaffold extends Module {
             return;
         }
 
-        if (doTellyShit()) {
+        if (doTellyShit() || doModernWatchdogTellyShit()) {
             return;
         }
 
@@ -318,6 +386,7 @@ public class Scaffold extends Module {
                     hypixelSprint = false;
                 }
             }
+
         } else {
             if (andromeda.getValue()) {
                 if (keepYMode.isMode("Normal")) {
@@ -373,8 +442,8 @@ public class Scaffold extends Module {
            }
 
            if (rotMode.isMode("Sideways")) {
-               float yaw = mc.player.getYaw() + 85; // Adjust yaw to be closer to 45 degrees
-               float pitch = 90; // Set pitch to 90 for a sideways look
+               float yaw = mc.player.getYaw() + 85;
+               float pitch = 90;
                rotations = new float[]{yaw, pitch};
            }
        }
@@ -515,6 +584,7 @@ public class Scaffold extends Module {
             return;
         }
 
+        // Only place extra block for Watchdog mode, not Washdog
         if (keepY.getValue() && keepYMode.isMode("Watchdog") && MoveUtils.isMoving2() && blocksPlaced >= 1) {
             if (mc.player.getVelocity().y + mc.player.getPos().y < scaffYCoord + 2.0 && mc.player.getVelocity().y < -0.15 && !mc.options.jumpKey.isPressed()) {
                 BlockData blockData1 = ScaffoldUtils.getBlockData(0, 1, 0);
@@ -522,6 +592,26 @@ public class Scaffold extends Module {
                     mc.interactionManager.interactBlock(mc.player, Hand.MAIN_HAND, new BlockHitResult(ScaffoldUtils.getNewVector(blockData1), blockData1.getFacing(), blockData1.getPosition(), false));
                     mc.player.swingHand(Hand.MAIN_HAND);
                     hypixelSprint = true;
+                }
+            }
+        }
+        
+        // ModernWatchdog: Telly-like behavior that keeps same Y level and only goes forward for about 2 ticks
+        if (telly.getValue() && modernWatchdog.getValue() && MoveUtils.isMoving2()) {
+            int airTicks = PlayerUtil.inAirTicks();
+            boolean modernWatchdogCondition = airTicks <= 2; // Limited to 2 ticks as requested
+            
+            // Check if we're moving forward (not sideways or backwards)
+            boolean movingForward = mc.player.input.movementForward > 0.8f && Math.abs(mc.player.input.movementSideways) < 0.1f;
+            
+            // Keep same Y level by maintaining scaffold Y coordinate
+            if (modernWatchdogCondition && movingForward) {
+                // Maintain the same Y level as when we started scaffolding
+                double targetY = scaffYCoord + 1.0;
+                if (Math.abs(mc.player.getY() - targetY) > 0.1) {
+                    // Gently adjust Y position to maintain level
+                    double yDiff = targetY - mc.player.getY();
+                    mc.player.getVelocity().y = Math.max(-0.1, Math.min(0.1, yDiff * 0.5));
                 }
             }
         }
@@ -570,6 +660,19 @@ public class Scaffold extends Module {
         } else {
             return telly.getValue() && PlayerUtil.inAirTicks() <= 5;
         }
+    }
+
+    private boolean doModernWatchdogTellyShit() {
+        if (!MoveUtils.isMoving2() || mc.player.hurtTime != 0) {
+            return false;
+        }
+        
+        // ModernWatchdog telly-like behavior: prevent rotations when in air for more than 2 ticks
+        if (telly.getValue() && modernWatchdog.getValue()) {
+            return PlayerUtil.inAirTicks() > 2;
+        }
+        
+        return false;
     }
 
     public double getRandom() {

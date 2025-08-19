@@ -25,7 +25,7 @@ public class NCPSpeed extends SubMode<Speed> {
         if (mc.player.hurtTime > getParentModule().ncpHurtBoostHurttime.getValueInt() && getParentModule().ncpHurtBoost.getValue() && CombatUtils.isInCombat()) {
             MoveUtils.strafe(getParentModule().ncpHurtBoostSpeed.getValue());
         } else {
-            MoveUtils.strafe(Math.max(MoveUtils.getSpeed(), MoveUtils.getAllowedHorizontalDistance()));
+            MoveUtils.strafe(Math.max(MoveUtils.getSpeed(), MoveUtils.getAllowedHorizontalDistance() * 1.01f));
         }
 
         if (getParentModule().ncpLowHop.getValue()) {

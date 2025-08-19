@@ -8,23 +8,46 @@ import dev.hez.meowsense.mixin.accesors.GameOptionsAccessor;
 import dev.hez.meowsense.mixin.accesors.KeyBindingAccessor;
 import dev.hez.meowsense.module.Module;
 import dev.hez.meowsense.module.ModuleCategory;
-import dev.hez.meowsense.module.modules.combat.Criticals;
 import dev.hez.meowsense.module.modules.player.Scaffold;
-import dev.hez.meowsense.module.setting.impl.BooleanSetting;
+import dev.hez.meowsense.module.setting.impl.ModeSetting;
 import net.minecraft.client.option.KeyBinding;
 
 public class Sprint extends Module {
-    public static BooleanSetting rage = new BooleanSetting("Rage", false);
+    public static ModeSetting mode = new ModeSetting("Mode", "Legit", "Legit", "Omni");
 
     public Sprint() {
         super("Sprint", "Sprints for you", 0, ModuleCategory.MOVEMENT);
-        this.addSetting(rage);
+        this.addSetting(mode);
     }
 
     public static boolean shouldSprintDiagonally() {
         if (Client.INSTANCE.getModuleManager().getModule(Scaffold.class).isEnabled())
             return false;
-        return rage.getValue();
+        return mode.getMode().equals("Omni");
+    }
+
+    private boolean shouldSprint() {
+        // Don't sprint if scaffold is enabled
+        if (Client.INSTANCE.getModuleManager().getModule(Scaffold.class).isEnabled()) {
+            return false;
+        }
+
+        // Check if player has enough food/hunger to sprint
+        if (mc.player.getHungerManager().getFoodLevel() <= 6) {
+            return false;
+        }
+
+        // Check movement input based on mode
+        switch (mode.getMode()) {
+            case "Legit":
+                // Only sprint when moving forward (not diagonally or backwards)
+                return mc.player.input.movementForward > 0.8f && Math.abs(mc.player.input.movementSideways) < 0.1f;
+            case "Omni":
+                // Sprint in any direction (omnidirectional) - same as old rage behavior
+                return Math.abs(mc.player.input.movementForward) > 0.1f || Math.abs(mc.player.input.movementSideways) > 0.1f;
+            default:
+                return false;
+        }
     }
 
     @EventLink
@@ -32,11 +55,18 @@ public class Sprint extends Module {
         if (isNull()) {
             return;
         }
-        this.setSuffix(rage.getValue() ? "Rage" : "Legit");
-        if (Client.INSTANCE.getModuleManager().getModule(Scaffold.class).isEnabled())
-            return;
 
+        // Update suffix based on current mode
+        this.setSuffix(mode.getMode());
+
+        // Disable sprint toggle to prevent conflicts
         ((GameOptionsAccessor) mc.options).getSprintToggled().setValue(false);
-        KeyBinding.setKeyPressed(((KeyBindingAccessor) mc.options.sprintKey).getBoundKey(), true);
+
+        // Apply sprint based on conditions
+        if (shouldSprint()) {
+            KeyBinding.setKeyPressed(((KeyBindingAccessor) mc.options.sprintKey).getBoundKey(), true);
+        } else {
+            KeyBinding.setKeyPressed(((KeyBindingAccessor) mc.options.sprintKey).getBoundKey(), false);
+        }
     };
 }
