@@ -47,7 +47,7 @@ import lombok.Getter;
 import net.minecraft.util.math.Vec3d;
 
 public class Scaffold extends Module {
-    public static final ModeSetting rotMode = new ModeSetting("Rotation Mode", "Normal", "Normal", "Grim 1.17", "Back", "Sideways", "None", "Godbridge");
+    public static final ModeSetting rotMode = new ModeSetting("Rotation Mode", "Normal", "Normal", "Grim 1.17", "Back", "Sideways", "StaticSideways", "None", "Godbridge");
 
     public static final BooleanSetting sprint = new BooleanSetting("Sprint", false);
     public static final ModeSetting sprintMode = new ModeSetting("Sprint Mode", "Normal", "Normal", "NoPacket", "Watchdog Slow", "oNCP");
@@ -190,7 +190,7 @@ public class Scaffold extends Module {
         int textY = centerY + 20; // 20 pixels below crosshair
         
         // Render background
-        event.getContext().fill(textX - 4, textY - 2, textX + textWidth + 4, textY + mc.textRenderer.fontHeight + 2, 0x80000000);
+        // event.getContext().fill(textX - 4, textY - 2, textX + textWidth + 4, textY + mc.textRenderer.fontHeight + 2, 0x80000000);
         
         // Render text with color based on block count
         int color = getBlockCountColor(blockCount);
@@ -441,8 +441,13 @@ public class Scaffold extends Module {
                rotations = new float[]{mc.player.getYaw() + 180, 83.8f};
            }
 
+           if (rotMode.isMode("StaticSideways")) {
+               float yaw = 90;
+               float pitch = 90;
+           }
+
            if (rotMode.isMode("Sideways")) {
-               float yaw = mc.player.getYaw() + 85;
+               float yaw = mc.player.getYaw() + 90;
                float pitch = 90;
                rotations = new float[]{yaw, pitch};
            }
