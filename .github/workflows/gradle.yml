@@ -33,5 +33,5 @@ jobs:
       - name: Upload built mod JAR
         uses: actions/upload-artifact@v4
         with:
-          name: mod-jar
+          name: meowsense-1.21
           path: build/libs/*.jar
